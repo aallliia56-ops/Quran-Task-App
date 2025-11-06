@@ -4,12 +4,16 @@ from datetime import datetime
 # اسم ملف قاعدة البيانات
 DB_NAME = 'quran_hifz.db'
 
+def get_db_connection():
+    """ينشئ اتصالًا بقاعدة البيانات."""
+    return sqlite3.connect(DB_NAME)
+
 def init_db():
-    """ينشئ جداول قاعدة البيانات."""
-    conn = sqlite3.connect(DB_NAME)
+    """ينشئ جداول قاعدة البيانات ويضيف الحقول الجديدة."""
+    conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 1. إنشاء جدول المستخدمين (Users) 👥 - (تم إضافة performance_level)
+    # 1. إنشاء جدول المستخدمين (Users) 👥 - (تم إضافة جميع حقول الخطة والمراجعة)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
@@ -18,8 +22,18 @@ def init_db():
             role TEXT NOT NULL, -- 'Teacher', 'Student', 'Parent'
             group_id INTEGER,
             student_id INTEGER, -- يُستخدم لربط ولي الأمر بالطالب
-            -- 🔴🔴 التعديل الأساسي: إضافة مستوى الأداء 🔴🔴
-            performance_level INTEGER DEFAULT 1 
+            
+            -- 🔴🔴 حقول المستويات والخطة الفردية 🔴🔴
+            performance_level INTEGER DEFAULT 1,          
+            current_segment_order INTEGER DEFAULT 1,    
+            hifz_plan_start_order INTEGER DEFAULT 1,    
+            hifz_plan_end_order INTEGER NOT NULL DEFAULT 258,
+            
+            -- 🟢🟢 حقول تتبع المراجعة (الحلقة الراشدة) 🟢🟢
+            review_current_task_index INTEGER DEFAULT 0,  -- مؤشر المهمة الحالية داخل قائمة MASTER_REVIEW_TASKS
+            last_hifz_sura_order INTEGER DEFAULT 114,     -- آخر سورة تم حفظها (للتجديد الدوري)
+            
+            FOREIGN KEY (group_id) REFERENCES groups (id)
         );
     """)
 
@@ -68,7 +82,7 @@ def init_db():
 
 def seed_db():
     """يضيف بيانات تجريبية (المعلم، الطالب، المقاطع، السجلات) إلى قاعدة البيانات."""
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # حذف البيانات القديمة (لتجنب التكرار في كل مرة نشغل فيها التعبئة)
@@ -78,24 +92,35 @@ def seed_db():
     cursor.execute("DELETE FROM groups")
 
 
-    # 1. إضافة المعلم والمستخدمين (مع تعيين مستوى الأداء)
+    # 1. إضافة المعلم والمستخدمين (مع تعيين مستوى الأداء وحقول الخطة الجديدة)
     
-    # 🔴🔴 التعديل الأساسي: تعيين مستويات الأداء للطلاب 🔴🔴
+    # الترتيب الجديد: 
+    # (name, auth_code, role, group_id, student_id, level, current_hifz_order, hifz_start, hifz_end, review_index, last_hifz_sura_order)
     users_data = [
-        # (name, auth_code, role, group_id, student_id, performance_level)
-        ('المعلم المشرف', '1000', 'Teacher', 1, None, None), 
-        ('خالد محمد', '2001', 'Student', 1, None, 2), # مستوى 2: تطوير
-        ('فاطمة علي', '2002', 'Student', 1, None, 3), # مستوى 3: متقدم
-        ('يوسف سعيد', '2003', 'Student', 1, None, 1), # مستوى 1: بناء
-        ('والد خالد', '3001', 'Parent', None, 2, None), 
+        # المعلم: لا يملك خطة
+        ('المعلم المشرف', '1000', 'Teacher', 1, None, None, None, None, None, None, None), 
+        
+        # خالد (مستوى 2: تطوير): حفظ من مقطع 10 إلى 150. آخر سورة حفظها 87 (الأعلى)
+        ('خالد محمد', '2001', 'Student', 1, None, 2, 10, 10, 150, 0, 87), 
+        
+        # فاطمة (مستوى 3: متقدم): حفظ من مقطع 1 إلى 258. آخر سورة حفظتها 2 (البقرة)
+        ('فاطمة علي', '2002', 'Student', 1, None, 3, 1, 1, 258, 0, 2), 
+        
+        # يوسف (مستوى 1: بناء): حفظ من مقطع 5 إلى 100. آخر سورة حفظها 114 (الناس)
+        ('يوسف سعيد', '2003', 'Student', 1, None, 1, 5, 5, 100, 0, 114), 
+        
+        # ولي الأمر: لا يملك خطة
+        ('والد خالد', '3001', 'Parent', None, 2, None, None, None, None, None, None), 
     ]
-    cursor.executemany("INSERT INTO users (name, auth_code, role, group_id, student_id, performance_level) VALUES (?, ?, ?, ?, ?, ?)",
-                       [(d[0], d[1], d[2], d[3], d[4], d[5]) for d in users_data])
+    cursor.executemany("""
+        INSERT INTO users (name, auth_code, role, group_id, student_id, performance_level, current_segment_order, hifz_plan_start_order, hifz_plan_end_order, review_current_task_index, last_hifz_sura_order) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, users_data)
     
     # إضافة المجموعة
     cursor.execute("INSERT INTO groups (id, name, teacher_id) VALUES (?, ?, ?)", (1, 'حلقة الإخلاص', 1))
 
-   # 2. إضافة مقاطع المنهج (Segments) - الترتيب التصاعدي الصحيح
+    # 2. إضافة مقاطع المنهج (Segments) - (كما هي)
     # الترتيب: (segment_order, sura_start, aya_start, sura_end, aya_end, name)
     segments_data = [
         # (رقم المقطع) - (السورة) - (بداية الآية) - (نهاية الآية) - (السورة) - (اسم المقطع)
@@ -438,12 +463,10 @@ def seed_db():
     ]
     
     cursor.executemany("INSERT INTO segments (segment_order, sura_start, aya_start, sura_end, aya_end, name) VALUES (?, ?, ?, ?, ?, ?)",
-                       segments_data)
+                        segments_data)
     
-    # 3. إضافة سجل تقدم تجريبي
-    # (تم حذف السجل القديم لتجنب التعارض، يمكن إضافته هنا إذا لزم الأمر، لكن الأفضل إبقاءه فارغاً لاختبار الدمج)
-    # 
-    
+    # 3. لا يوجد سجل تقدم تجريبي في البداية
+
     
     conn.commit()
     conn.close()
@@ -453,4 +476,5 @@ def seed_db():
 if __name__ == '__main__':
     # التأكد من استدعاء الدالتين
     init_db()
+
     seed_db()
