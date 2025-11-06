@@ -100,22 +100,11 @@ def seed_db():
     
     # الترتيب الجديد: 
     # (name, auth_code, role, group_id, student_id, level, current_hifz_order, hifz_start, hifz_end, review_index, last_hifz_sura_order)
-    users_data = [
-        # المعلم: لا يملك خطة
-        ('المعلم المشرف', '1000', 'Teacher', 1, None, None, None, None, None, None, None), 
-        
-        # خالد (مستوى 2: تطوير): حفظ من مقطع 10 إلى 150. آخر سورة حفظها 87 (الأعلى)
-        ('خالد محمد', '2001', 'Student', 1, None, 2, 10, 10, 150, 0, 87), 
-        
-        # فاطمة (مستوى 3: متقدم): حفظ من مقطع 1 إلى 258. آخر سورة حفظتها 2 (البقرة)
-        ('فاطمة علي', '2002', 'Student', 1, None, 3, 1, 1, 258, 0, 2), 
-        
-        # يوسف (مستوى 1: بناء): حفظ من مقطع 5 إلى 100. آخر سورة حفظها 114 (الناس)
-        ('يوسف سعيد', '2003', 'Student', 1, None, 1, 5, 5, 100, 0, 114), 
-        
-        # ولي الأمر: لا يملك خطة
-        ('والد خالد', '3001', 'Parent', None, 2, None, None, None, None, None, None), 
-    ]
+   users_data = [
+    (1, 'المعلم المشرف', 'T101', 'Teacher', 1, None, None), 
+    (2, 'خالد الطالب', 'S201', 'Student', 2, 2, None),        
+    (3, 'والد خالد', 'P301', 'Parent', 3, None, 2),          
+]
     cursor.executemany("""
         INSERT INTO users (name, auth_code, role, group_id, student_id, performance_level, current_segment_order, hifz_plan_start_order, hifz_plan_end_order, review_current_task_index, last_hifz_sura_order) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -482,4 +471,5 @@ if __name__ == '__main__':
     init_db()
 
     seed_db()
+
 
