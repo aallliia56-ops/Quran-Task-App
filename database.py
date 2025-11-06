@@ -89,26 +89,40 @@ def seed_db():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # حذف البيانات القديمة (لتجنب التكرار في كل مرة نشغل فيها التعبئة)
+    # 1. 🗑️ حذف البيانات القديمة (نستخدم DELETE بدلاً من DROP TABLE)
+    # ملاحظة: إذا كنت تستخدم DROP TABLE في init_db، فإن DELETE هنا يكون تكراراً ولكن للتأكد.
     cursor.execute("DELETE FROM progress_records")
     cursor.execute("DELETE FROM users")
     cursor.execute("DELETE FROM segments")
     cursor.execute("DELETE FROM groups")
 
 
-    # 1. إضافة المعلم والمستخدمين (مع تعيين مستوى الأداء وحقول الخطة الجديدة)
+    # 2. إضافة المعلم والمستخدمين (11 قيمة لكل مستخدم)
     
-    # الترتيب الجديد: 
-    # (name, auth_code, role, group_id, student_id, level, current_hifz_order, hifz_start, hifz_end, review_index, last_hifz_sura_order)
-   users_data = [
-    (1, 'المعلم المشرف', 'T101', 'Teacher', 1, None, None), 
-    (2, 'خالد الطالب', 'S201', 'Student', 2, 2, None),        
-    (3, 'والد خالد', 'P301', 'Parent', 3, None, 2),          
-]
+    # الترتيب الجديد المطلوب:
+    # (name, auth_code, role, group_id, student_id, 
+    #  performance_level, current_segment_order, 
+    #  hifz_plan_start_order, hifz_plan_end_order, review_current_task_index, last_hifz_sura_order)
+    
+    users_data = [
+        # المعلم: T101 (Level=1، لا يحتاج لبيانات تقدم)
+        ('المعلم المشرف', 'T101', 'Teacher', 1, None, 1, None, None, None, None, None), 
+        
+        # الطالب: S201 (Level=2، يبدأ من المقطع الأول)
+        ('خالد الطالب', 'S201', 'Student', 2, 2, 2, 1, 1, 30, 0, 1), 
+        
+        # ولي الأمر: P301 (Level=1، مربوط بالطالب ID=2)
+        ('والد خالد', 'P301', 'Parent', 3, 2, 1, None, None, None, None, None), 
+    ]
+    
+    # الأعمدة: 11 عموداً
     cursor.executemany("""
         INSERT INTO users (name, auth_code, role, group_id, student_id, performance_level, current_segment_order, hifz_plan_start_order, hifz_plan_end_order, review_current_task_index, last_hifz_sura_order) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, users_data)
+    
+    conn.commit()
+    conn.close()
     
     # إضافة المجموعة
     cursor.execute("INSERT INTO groups (id, name, teacher_id) VALUES (?, ?, ?)", (1, 'حلقة الإخلاص', 1))
@@ -471,5 +485,6 @@ if __name__ == '__main__':
     init_db()
 
     seed_db()
+
 
 
