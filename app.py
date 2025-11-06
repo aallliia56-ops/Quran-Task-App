@@ -1,21 +1,23 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import sqlite3
-from datetime import datetime 
+from datetime import datetime
 
-# ... (بقية الكود)
+# =================================================================
+# 🛑 التعديل رقم 1: استيراد وظائف قاعدة البيانات من database.py
+# =================================================================
+from database import get_db_connection, init_db, seed_db # تم تعديل هذا السطر
+import sqlite3 # نحتاج إلى استيراد sqlite3 لمعالجة الأخطاء فقط
+
+# DB_NAME تم إزالته لأنه موجود في database.py
 
 app = Flask(__name__)
 # مفتاح سري لحماية الجلسات (مهم جداً لأمان الويب)
 app.secret_key = 'your_super_secret_key_here' 
-DB_NAME = 'quran_hifz.db'
 
-# --- 1. وظائف قاعدة البيانات ---
+# -----------------------------------------------------------------
+# --- 1. وظائف قاعدة البيانات (تم نقلها إلى database.py) ---
+# تم حذف دالة get_db_connection() هنا
+# -----------------------------------------------------------------
 
-def get_db_connection():
-    # دالة بسيطة للاتصال بقاعدة البيانات
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row # لجعل النتائج سهلة الوصول كقاموس (dictionary)
-    return conn
 
 # --- 2. دالة مساعدة: دمج المقاطع حسب المستوى ومنطق الحدود ---
 
@@ -36,7 +38,7 @@ def merge_segments(segments, level):
         
         # 1. 🛑 فحص شرط الحدود (The Boundary Check)
         # هذا الشرط ينطبق فقط إذا كان مستوى الطالب > 1 ويوجد مقطع تالٍ للدمج
-        if level > 1 and num_to_merge > 1:
+        if level > 1 and num_to_merge > 1 and i + 1 < len(segments_list): # إضافة فحص i + 1
             next_segment = segments_list[i + 1]
             
             # إذا كان رقم سورة نهاية المقطع الحالي لا يساوي رقم سورة بداية المقطع التالي
@@ -48,7 +50,8 @@ def merge_segments(segments, level):
         
         if num_to_merge == 1:
             # المستوى 1، أو تم إلغاء الدمج بسبب شرط الحدود
-            merged_segment = current_segment
+            # يتم إنشاء نسخة للتأكد من أنها متوافقة مع القاموس
+            merged_segment = dict(current_segment) 
         else:
             # المستويات 2 أو 3 (بدون حدود سور متقاطعة)
             last_segment = segments_list[i + num_to_merge - 1]
@@ -56,11 +59,17 @@ def merge_segments(segments, level):
             # 💡 منطق بناء اسم المهمة 💡
             if current_segment['sura_start'] == last_segment['sura_end']:
                 try:
-                    sura_name_part = current_segment['name'].split(': ')[1].split(' (')[0]
-                    new_name = f"{sura_name_part} ({current_segment['aya_start']}-{last_segment['aya_end']})"
+                    # محاولة استخراج اسم السورة من الحقل 'name' في حال توفره
+                    # هذا الجزء معقد بعض الشيء وقد لا يعمل دائماً بنفس الشكل، لكننا سنحتفظ به
+                    name_parts = current_segment['name'].split(': ')
+                    if len(name_parts) > 1:
+                        sura_name_part = name_parts[1].split(' (')[0]
+                        new_name = f"{sura_name_part} (من آية {current_segment['aya_start']} إلى آية {last_segment['aya_end']})"
+                    else:
+                        new_name = f"{current_segment['name']} إلى {last_segment['name']}"
                 except IndexError:
                     new_name = f"{current_segment['name']} إلى {last_segment['name']}"
-                
+                    
                 final_name = f"المهمة المدمجة: {new_name}"
             
             else:
@@ -93,6 +102,7 @@ def login():
         
         user = None 
 
+        conn = None
         try:
             conn = get_db_connection()
             user = conn.execute('SELECT * FROM users WHERE auth_code = ?', (auth_code,)).fetchone()
@@ -134,7 +144,6 @@ def teacher_dashboard():
     if 'user_role' not in session or session['user_role'] != 'Teacher':
         return redirect(url_for('login'))
 
-    teacher_id = session['user_id']
     conn = get_db_connection()
     
     # استعلام معقد (JOIN) لجلب السجلات المعلقة مع أسماء الطلاب والمقاطع المرتبطة
@@ -149,6 +158,7 @@ def teacher_dashboard():
         JOIN users s ON p.student_id = s.id
         JOIN segments seg ON p.segment_id = seg.id
         WHERE p.status = 'Pending'
+        ORDER BY p.date_submitted ASC
     """).fetchall()
     
     conn.close()
@@ -176,9 +186,9 @@ def evaluate_record():
         # تحديث حالة السجل في قاعدة البيانات
         conn.execute("""
             UPDATE progress_records
-            SET status = ?, teacher_id = ?
+            SET status = ?, teacher_id = ?, date_reviewed = ?
             WHERE id = ?
-        """, (new_status, teacher_id, record_id))
+        """, (new_status, teacher_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), record_id))
         conn.commit()
     except sqlite3.Error as e:
         print(f"ERROR UPDATING RECORD: {e}")
@@ -271,13 +281,11 @@ def submit_progress():
 @app.route('/student')
 def student_dashboard():
     """
-    ✅✅ تعديل نهائي: لوحة تحكم الطالب:
-    1. عرض المهمة الحالية الواحدة فقط.
-    2. المهمة التالية لا تظهر حتى يتم قبول المهمة الحالية (حالة Accepted).
+    لوحة تحكم الطالب: عرض المهمة الحالية الواحدة فقط.
     """
     if 'user_role' not in session or session['user_role'] != 'Student':
         return redirect(url_for('login'))
-    
+        
     student_id = session['user_id']
     conn = get_db_connection()
 
@@ -346,24 +354,34 @@ def student_dashboard():
         if not is_task_complete:
             current_task = task
             break
-    
+            
     conn.close()
     
     # نرسل المهمة الحالية (أو قائمة فارغة إذا اكتمل كل شيء)
     current_segments = [current_task] if current_task else []
 
+    # 6. جلب مقاييس الأداء الأساسية (KPIs) - افتراضية حالياً
+    # يجب استبدالها لاحقاً باستعلامات حقيقية من قاعدة البيانات
+    # سنتركها كقيم ثابتة في الوقت الحالي لتشغيل الواجهة
+    kpis = {
+        'total_points': 450, # يجب حسابها بناءً على النقاط الممنوحة في progress_records
+        'success_rate': '85%', # يجب حسابها (Accepted / Total Reviewed)
+        'completion_rate': '70%' # يجب حسابها (Total Accepted Segments / Total Segments)
+    }
+
     # تمرير البيانات إلى الواجهة
     return render_template('student_dashboard.html',
                            student_name=session.get('user_name'),
                            segments=current_segments, # إرسال مهمة واحدة فقط
-                           status_map=status_map)
+                           status_map=status_map,
+                           kpis=kpis) # تمرير الـ KPIs
 
 @app.route('/parent')
 def parent_dashboard():
     """لوحة تحكم ولي الأمر: عرض سجلات التقدم المقبولة للطالب المرتبط."""
     if 'user_role' not in session or session['user_role'] != 'Parent':
         return redirect(url_for('login'))
-    
+        
     conn = get_db_connection()
     
     # 1. جلب ID الطالب المرتبط بولي الأمر الحالي
@@ -371,10 +389,12 @@ def parent_dashboard():
     
     if not parent_user or not parent_user['student_id']:
         conn.close()
-        return "لا يوجد طالب مرتبط بهذا الحساب."
+        # يمكن تحسين هذه الرسالة في الواجهة بـ HTML
+        return render_template('parent_dashboard.html', parent_name=session.get('user_name'), student_name="لا يوجد طالب مرتبط", accepted_records=None)
 
     student_id = parent_user['student_id']
-    student_name = conn.execute("SELECT name FROM users WHERE id = ?", (student_id,)).fetchone()['name']
+    student_name_data = conn.execute("SELECT name FROM users WHERE id = ?", (student_id,)).fetchone()
+    student_name = student_name_data['name'] if student_name_data else "غير معروف"
 
     # 2. جلب سجلات التقدم "المقبولة" للطالب
     accepted_records = conn.execute("""
@@ -406,6 +426,13 @@ def logout():
     return redirect(url_for('login'))
 
 
+# =================================================================
+# 🛑 التعديل رقم 2: تهيئة قاعدة البيانات عند التشغيل
+# =================================================================
 if __name__ == '__main__':
-    # تأكد من إيقاف وتشغيل التطبيق مرة أخرى بعد اللصق
+    print("--- 🛠️ تهيئة قاعدة البيانات (init_db) ---")
+    init_db() # 1. إنشاء الجداول
+    print("--- 📚 تعبئة البيانات الأولية (seed_db) ---")
+    seed_db() # 2. تعبئة البيانات (المستخدمين والمقاطع)
+    print("--- 🚀 تشغيل تطبيق Flask ---")
     app.run(debug=True)
