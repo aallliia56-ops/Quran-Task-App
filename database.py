@@ -11,35 +11,41 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row 
     return conn
 
+# في ملف database.py
 def init_db():
-    """ينشئ جداول قاعدة البيانات ويضيف الحقول الجديدة."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    # ... بقية كود إنشاء الجداول ...
 
-    # 1. إنشاء جدول المستخدمين (Users) 👥 - (تم إضافة جميع حقول الخطة والمراجعة)
+    # يجب أن يبقى هذا هنا لضمان حذف الجداول القديمة
+    cursor.execute('DROP TABLE IF EXISTS progress_records')
+    cursor.execute('DROP TABLE IF EXISTS segments')
+    cursor.execute('DROP TABLE IF EXISTS users')
+    cursor.execute('DROP TABLE IF EXISTS groups')
+
+    # 1. إنشاء جدول المستخدمين (USERS)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE users (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
-            auth_code TEXT NOT NULL UNIQUE,
-            role TEXT NOT NULL, -- 'Teacher', 'Student', 'Parent'
+            auth_code TEXT UNIQUE NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('Teacher', 'Student', 'Parent')),
             group_id INTEGER,
-            student_id INTEGER, -- يُستخدم لربط ولي الأمر بالطالب
+            student_id INTEGER,
+            parent_id INTEGER,
             
-            -- 🔴🔴 حقول المستويات والخطة الفردية 🔴🔴
-            performance_level INTEGER DEFAULT 1,          
-            current_segment_order INTEGER DEFAULT 1,    
-            hifz_plan_start_order INTEGER DEFAULT 1,    
-            hifz_plan_end_order INTEGER NOT NULL DEFAULT 258,
-            
-            -- 🟢🟢 حقول تتبع المراجعة (الحلقة الراشدة) 🟢🟢
-            review_current_task_index INTEGER DEFAULT 0,  -- مؤشر المهمة الحالية داخل قائمة MASTER_REVIEW_TASKS
-            last_hifz_sura_order INTEGER DEFAULT 114,     -- آخر سورة تم حفظها (للتجديد الدوري)
+            -- 🚨 الأعمدة الجديدة الحاسمة التي يجب التأكد منها 🚨
+            performance_level INTEGER NOT NULL DEFAULT 1,
+            current_segment_order INTEGER, 
+            hifz_plan_start_order INTEGER,
+            hifz_plan_end_order INTEGER,
+            review_current_task_index INTEGER DEFAULT 0,
+            last_hifz_sura_order INTEGER,
+            -- ------------------------------------------------
             
             FOREIGN KEY (group_id) REFERENCES groups (id)
-        );
+        )
     """)
+    
 
     # 2. إنشاء جدول المقاطع (Segments) 📚
     cursor.execute("""
@@ -485,6 +491,7 @@ if __name__ == '__main__':
     init_db()
 
     seed_db()
+
 
 
 
