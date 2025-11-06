@@ -5,13 +5,17 @@ from datetime import datetime
 DB_NAME = 'quran_hifz.db'
 
 def get_db_connection():
-    """ينشئ اتصالًا بقاعدة البيانات."""
-    return sqlite3.connect(DB_NAME)
+    """ينشئ اتصالًا بقاعدة البيانات ويضبط مخرج الصفوف."""
+    conn = sqlite3.connect(DB_NAME)
+    # 🚨 السطر الحاسم الذي يحل مشكلة TypeError في Flask 🚨
+    conn.row_factory = sqlite3.Row 
+    return conn
 
 def init_db():
     """ينشئ جداول قاعدة البيانات ويضيف الحقول الجديدة."""
     conn = get_db_connection()
     cursor = conn.cursor()
+    # ... بقية كود إنشاء الجداول ...
 
     # 1. إنشاء جدول المستخدمين (Users) 👥 - (تم إضافة جميع حقول الخطة والمراجعة)
     cursor.execute("""
@@ -478,3 +482,4 @@ if __name__ == '__main__':
     init_db()
 
     seed_db()
+
