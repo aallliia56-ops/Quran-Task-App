@@ -13,7 +13,7 @@ def get_db_connection():
 
 # في ملف database.py
 def init_db():
-    conn = get_db_connection()
+  
     cursor = conn.cursor()
 
     # يجب أن يبقى هذا هنا لضمان حذف الجداول القديمة
@@ -87,12 +87,12 @@ def init_db():
     """)
 
     conn.commit()
-    conn.close()
+    
     print(f"تم إنشاء قاعدة البيانات {DB_NAME} والجداول بنجاح.")
 
 def seed_db():
     """يضيف بيانات تجريبية (المعلم، الطالب، المقاطع، السجلات) إلى قاعدة البيانات."""
-    conn = get_db_connection()
+  
     cursor = conn.cursor()
 
     # 1. 🗑️ حذف البيانات القديمة (نستخدم DELETE بدلاً من DROP TABLE)
@@ -128,7 +128,7 @@ def seed_db():
     """, users_data)
     
     conn.commit()
-    conn.close()
+  
     
     # إضافة المجموعة
     cursor.execute("INSERT INTO groups (id, name, teacher_id) VALUES (?, ?, ?)", (1, 'حلقة الإخلاص', 1))
@@ -491,6 +491,7 @@ if __name__ == '__main__':
     init_db()
 
     seed_db()
+
 
 
 
