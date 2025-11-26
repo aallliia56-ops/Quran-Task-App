@@ -714,6 +714,7 @@ async function displayStudentDashboard(student) {
 }
 
 function renderStudentTasks(student) {
+  // تفريغ منطقة المهام
   studentTasksDiv.innerHTML = "";
   const tasksArray = Array.isArray(student.tasks) ? student.tasks : [];
   const wrap = document.createElement("div");
@@ -721,7 +722,9 @@ function renderStudentTasks(student) {
   const hifzPaused = !!student.pause_hifz;
   const murajaaPaused = !!student.pause_murajaa;
 
-  // 🔹 مهمة الحفظ (تظهر فقط إذا لم تكن موقوفة)
+  // =========================
+  // 1) مهمة الحفظ
+  // =========================
   const hifzMission = !hifzPaused ? getCurrentHifzMission(student) : null;
   if (hifzMission) {
     const pendingCurriculumTask = tasksArray.find(
@@ -735,10 +738,39 @@ function renderStudentTasks(student) {
       pendingCurriculumTask &&
       pendingCurriculumTask.status === "pending_assistant";
 
-    
+    wrap.appendChild(
+      buildMissionCard({
+        title: "🎯 الحفظ",
+        tagClass: "hifz",
+        description: hifzMission.description,
+        points: hifzMission.points,
+        pendingText: pendingCurriculumTask
+          ? isAssistantPending
+            ? "قيد المراجعة لدى المساعد..."
+            : "قيد المراجعة لدى المعلم..."
+          : "",
+        buttonText: pendingCurriculumTask
+          ? isAssistantPending
+            ? "قيد المراجعة"
+            : "إلغاء الإرسال"
+          : "أنجزت المهمة ✅",
+        disabled: !!pendingCurriculumTask && isAssistantPending,
+        onClick: () =>
+          pendingCurriculumTask
+            ? !isAssistantPending &&
+              cancelCurriculumTask(
+                student.code,
+                "hifz",
+                hifzMission.startIndex
+              )
+            : submitCurriculumTask(student.code, hifzMission),
+      })
+    );
   }
 
-  // 🔹 مهمة المراجعة (تظهر فقط إذا لم تكن موقوفة)
+  // =========================
+  // 2) مهمة المراجعة
+  // =========================
   const murMission = !murajaaPaused ? getCurrentMurajaaMission(student) : null;
   if (murMission) {
     const pendingMurTask = tasksArray.find(
@@ -751,36 +783,6 @@ function renderStudentTasks(student) {
 
     const isAssistantPending =
       pendingMurTask && pendingMurTask.status === "pending_assistant";
-wrap.appendChild(
-  buildMissionCard({
-    title: "🎯 الحفظ",
-    tagClass: "hifz",
-    description: hifzMission.description,
-    points: hifzMission.points,
-    pendingText: pendingCurriculumTask
-      ? isAssistantPending
-        ? "قيد المراجعة لدى المساعد..."
-        : "قيد المراجعة لدى المعلم..."
-      : "",
-    buttonText: pendingCurriculumTask
-      ? isAssistantPending
-        ? "قيد المراجعة"
-        : "إلغاء الإرسال"
-      : "أنجزت المهمة ✅",
-    disabled: !!pendingCurriculumTask && isAssistantPending,
-    audioId: hifzMission.audioId || null,                      // 👈 رقم المقطع
-    requireAudioFirst: !pendingCurriculumTask && !!hifzMission.audioId, // 👈 قفل الزر
-    onClick: () =>
-      pendingCurriculumTask
-        ? !isAssistantPending &&
-          cancelCurriculumTask(
-            student.code,
-            "hifz",
-            hifzMission.startIndex
-          )
-        : submitCurriculumTask(student.code, hifzMission),
-  })
-);
 
     wrap.appendChild(
       buildMissionCard({
@@ -808,10 +810,13 @@ wrap.appendChild(
     );
   }
 
-  // 🔹 المهام العامة (عرض غير المكتملة فقط)
+  // =========================
+  // 3) المهام العامة
+  // =========================
   const generalTasks = tasksArray.filter(
     (t) => t.type === "general" && t.status !== "completed"
   );
+
   for (const task of generalTasks) {
     const card = document.createElement("div");
     card.className = "task-card";
@@ -860,8 +865,9 @@ wrap.appendChild(
     wrap.appendChild(card);
   }
 
-  // 🔹 رسالة "لا توجد مهام" تظهر فقط إذا:
-  // لا يوجد حفظ، لا يوجد مراجعة، غير موقوفين، وما فيه مهام عامة (غير مكتملة)
+  // =========================
+  // 4) لا توجد مهام
+  // =========================
   if (
     !hifzMission &&
     !murMission &&
@@ -875,6 +881,7 @@ wrap.appendChild(
     studentTasksDiv.appendChild(wrap);
   }
 }
+
 
 
 
