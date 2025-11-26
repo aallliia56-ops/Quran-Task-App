@@ -209,7 +209,7 @@ function hideAllScreens() {
 const generateUniqueId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-const getReviewArrayForLevel = (level) => REVIEW_CURRICULUM[level] || [];
+const getReviewArrayForLevel = () => REVIEW_CURRICULUM || [];
 
 /** جلب جميع الطلاب مرتبين بالنقاط مع فلتر اختياري */
 async function fetchAllStudentsSortedByPoints(filterFn) {
@@ -224,9 +224,10 @@ async function fetchAllStudentsSortedByPoints(filterFn) {
 }
 
 function isInCurrentHalaqa(student) {
-  const h = student.halaqa || "ONSITE";
-  return h === currentHalaqa;
+  // حلقة واحدة فقط – كل الطلاب مشمولين
+  return true;
 }
+
 
 function updateHalaqaToggleUI() {
   if (!halaqaOnsiteBtn || !halaqaOnlineBtn) return;
@@ -1949,25 +1950,15 @@ function displayCurriculumsInTeacherPanel() {
       `<div class="curriculum-item">(${i}) ${it.surah_name_ar} (${it.start_ayah}-${it.end_ayah}) – نقاط: ${it.points || 0}</div>`
   ).join("");
 
-  murajaaCurriculumDisplay.innerHTML = Object.entries(REVIEW_CURRICULUM)
-    .map(([level, items]) => {
-      const title =
-        level === "BUILDING"
-          ? "البناء"
-          : level === "DEVELOPMENT"
-          ? "التطوير"
-          : "المتقدم";
-      const list = items
-        .map(
-          (it, i) =>
-            `<div class="curriculum-item">(${i}) ${it.name} – نقاط: ${
-              it.points || 0
-            }</div>`
-        )
-        .join("");
-      return `<h4>${title}</h4>${list}`;
-    })
-    .join("<hr />");
+  murajaaCurriculumDisplay.innerHTML = REVIEW_CURRICULUM
+  .map(
+    (it, i) =>
+      `<div class="curriculum-item">(${i}) ${it.name} – نقاط: ${
+        it.points || 0
+      }</div>`
+  )
+  .join("");
+
 }
 
 async function displayParentDashboard(parentCode) {
