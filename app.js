@@ -739,33 +739,38 @@ function renderStudentTasks(student) {
       pendingCurriculumTask.status === "pending_assistant";
 
     wrap.appendChild(
-      buildMissionCard({
-        title: "🎯 الحفظ",
-        tagClass: "hifz",
-        description: hifzMission.description,
-        points: hifzMission.points,
-        pendingText: pendingCurriculumTask
-          ? isAssistantPending
-            ? "قيد المراجعة لدى المساعد..."
-            : "قيد المراجعة لدى المعلم..."
-          : "",
-        buttonText: pendingCurriculumTask
-          ? isAssistantPending
-            ? "قيد المراجعة"
-            : "إلغاء الإرسال"
-          : "أنجزت المهمة ✅",
-        disabled: !!pendingCurriculumTask && isAssistantPending,
-        onClick: () =>
-          pendingCurriculumTask
-            ? !isAssistantPending &&
-              cancelCurriculumTask(
-                student.code,
-                "hifz",
-                hifzMission.startIndex
-              )
-            : submitCurriculumTask(student.code, hifzMission),
-      })
-    );
+  buildMissionCard({
+    title: "🎯 الحفظ",
+    tagClass: "hifz",
+    description: hifzMission.description,
+    points: hifzMission.points,
+    pendingText: pendingCurriculumTask
+      ? isAssistantPending
+        ? "قيد المراجعة لدى المساعد..."
+        : "قيد المراجعة لدى المعلم..."
+      : "",
+    buttonText: pendingCurriculumTask
+      ? isAssistantPending
+        ? "قيد المراجعة"
+        : "إلغاء الإرسال"
+      : "أنجزت المهمة ✅",
+    disabled: !!pendingCurriculumTask && isAssistantPending,
+    onClick: () =>
+      pendingCurriculumTask
+        ? !isAssistantPending &&
+          cancelCurriculumTask(
+            student.code,
+            "hifz",
+            hifzMission.startIndex
+          )
+        : submitCurriculumTask(student.code, hifzMission),
+
+    // 👇 إضافة الصوت + إجبار الاستماع قبل الإنجاز
+    audioId: hifzMission.audioId,
+    requireAudioFirst: true,
+  })
+);
+
   }
 
   // =========================
