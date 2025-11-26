@@ -383,11 +383,7 @@ function getCurrentHifzMission(student) {
   const first = all[startIndex];
   const segs = [first];
 
-  for (
-    let i = startIndex + 1;
-    i < all.length && segs.length < maxSegments;
-    i++
-  ) {
+  for (let i = startIndex + 1; i < all.length && segs.length < maxSegments; i++) {
     const seg = all[i];
     if (seg.surah_number !== first.surah_number) break;
     segs.push(seg);
@@ -400,6 +396,7 @@ function getCurrentHifzMission(student) {
     lastIndex: startIndex + segs.length - 1,
     description: `${first.surah_name_ar} (${first.start_ayah}-${last.end_ayah})`,
     points: first.points || 5,
+    audioId: first.audio_id || null,   // 👈 هنا نرسل رقم المقطع الصوتي
   };
 }
 
@@ -420,11 +417,7 @@ function getNextHifzMission(student) {
   const first = all[candidate];
   const segs = [first];
 
-  for (
-    let i = candidate + 1;
-    i < all.length && i <= planEnd && segs.length < maxSegments;
-    i++
-  ) {
+  for (let i = candidate + 1; i < all.length && i <= planEnd && segs.length < maxSegments; i++) {
     const seg = all[i];
     if (seg.surah_number !== first.surah_number) break;
     segs.push(seg);
@@ -437,6 +430,7 @@ function getNextHifzMission(student) {
     lastIndex: candidate + segs.length - 1,
     description: `${first.surah_name_ar} (${first.start_ayah}-${last.end_ayah})`,
     points: first.points || 5,
+    audioId: first.audio_id || null,
   };
 }
 
@@ -741,34 +735,7 @@ function renderStudentTasks(student) {
       pendingCurriculumTask &&
       pendingCurriculumTask.status === "pending_assistant";
 
-    wrap.appendChild(
-      buildMissionCard({
-        title: "🎯 الحفظ",
-        tagClass: "hifz",
-        description: hifzMission.description,
-        points: hifzMission.points,
-        pendingText: pendingCurriculumTask
-          ? isAssistantPending
-            ? "قيد المراجعة لدى المساعد..."
-            : "قيد المراجعة لدى المعلم..."
-          : "",
-        buttonText: pendingCurriculumTask
-          ? isAssistantPending
-            ? "قيد المراجعة"
-            : "إلغاء الإرسال"
-          : "أنجزت المهمة ✅",
-        disabled: !!pendingCurriculumTask && isAssistantPending,
-        onClick: () =>
-          pendingCurriculumTask
-            ? !isAssistantPending &&
-              cancelCurriculumTask(
-                student.code,
-                "hifz",
-                hifzMission.startIndex
-              )
-            : submitCurriculumTask(student.code, hifzMission),
-      })
-    );
+    
   }
 
   // 🔹 مهمة المراجعة (تظهر فقط إذا لم تكن موقوفة)
@@ -784,6 +751,36 @@ function renderStudentTasks(student) {
 
     const isAssistantPending =
       pendingMurTask && pendingMurTask.status === "pending_assistant";
+wrap.appendChild(
+  buildMissionCard({
+    title: "🎯 الحفظ",
+    tagClass: "hifz",
+    description: hifzMission.description,
+    points: hifzMission.points,
+    pendingText: pendingCurriculumTask
+      ? isAssistantPending
+        ? "قيد المراجعة لدى المساعد..."
+        : "قيد المراجعة لدى المعلم..."
+      : "",
+    buttonText: pendingCurriculumTask
+      ? isAssistantPending
+        ? "قيد المراجعة"
+        : "إلغاء الإرسال"
+      : "أنجزت المهمة ✅",
+    disabled: !!pendingCurriculumTask && isAssistantPending,
+    audioId: hifzMission.audioId || null,                      // 👈 رقم المقطع
+    requireAudioFirst: !pendingCurriculumTask && !!hifzMission.audioId, // 👈 قفل الزر
+    onClick: () =>
+      pendingCurriculumTask
+        ? !isAssistantPending &&
+          cancelCurriculumTask(
+            student.code,
+            "hifz",
+            hifzMission.startIndex
+          )
+        : submitCurriculumTask(student.code, hifzMission),
+  })
+);
 
     wrap.appendChild(
       buildMissionCard({
@@ -890,6 +887,8 @@ function buildMissionCard({
   buttonText,
   onClick,
   disabled = false,
+  audioId = null,
+  requireAudioFirst = false,
 }) {
   const card = document.createElement("div");
   card.className = "task-card";
@@ -906,18 +905,74 @@ function buildMissionCard({
       <span class="task-status-text">${pendingText}</span>
     </div>
   `;
+
   const footer = card.querySelector(".task-footer");
+  const body = card.querySelector(".task-body");
+
   const btn = document.createElement("button");
   btn.className = "button success";
   btn.textContent = buttonText;
+
   if (disabled) {
+    btn.disabled = true;
+  } else if (audioId && requireAudioFirst) {
+    // لازم يسمع أولاً
     btn.disabled = true;
   } else {
     btn.addEventListener("click", onClick);
   }
+
   footer.appendChild(btn);
+
+  // 🔊 جزء الصوت – يظهر فقط لو فيه audioId
+  if (audioId && body) {
+    const audioWrapper = document.createElement("div");
+    audioWrapper.style.marginTop = "6px";
+    audioWrapper.className = "audio-wrapper";
+
+    const playBtn = document.createElement("button");
+    playBtn.className = "button";
+    playBtn.textContent = "استمع للمقطع 🔊";
+
+    const counter = document.createElement("span");
+    counter.style.marginRight = "8px";
+
+    const audio = document.createElement("audio");
+    audio.src = `${audioId}.mp3`;
+    audio.preload = "auto";
+
+    const requiredPlays = 3;
+    let plays = 0;
+    counter.textContent = `0 / ${requiredPlays} مرات استماع`;
+
+    playBtn.addEventListener("click", () => {
+      audio.currentTime = 0;
+      audio.play();
+    });
+
+    audio.addEventListener("ended", () => {
+      plays += 1;
+      if (plays > requiredPlays) plays = requiredPlays;
+      counter.textContent = `${plays} / ${requiredPlays} مرات استماع`;
+
+      if (!disabled && requireAudioFirst && plays >= requiredPlays) {
+        // نفك القفل ونربط الزر بالحدث
+        if (btn.disabled) {
+          btn.disabled = false;
+          btn.addEventListener("click", onClick);
+        }
+      }
+    });
+
+    audioWrapper.appendChild(playBtn);
+    audioWrapper.appendChild(counter);
+    audioWrapper.appendChild(audio);
+    body.appendChild(audioWrapper);
+  }
+
   return card;
 }
+
 
 async function submitCurriculumTask(studentCode, mission) {
   try {
