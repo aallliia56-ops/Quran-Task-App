@@ -209,7 +209,7 @@ function hideAllScreens() {
 const generateUniqueId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-const getReviewArrayForLevel = () => REVIEW_CURRICULUM || [];
+const getReviewArrayForLevel = () => REVIEW_CURRICULUM.BUILDING || [];
 
 /** جلب جميع الطلاب مرتبين بالنقاط مع فلتر اختياري */
 async function fetchAllStudentsSortedByPoints(filterFn) {
@@ -1945,21 +1945,24 @@ registerStudentButton?.addEventListener("click", async () => {
 });
 
 function displayCurriculumsInTeacherPanel() {
+  if (!hifzCurriculumDisplay || !murajaaCurriculumDisplay) return;
+
+  // عرض منهج الحفظ
   hifzCurriculumDisplay.innerHTML = HIFZ_CURRICULUM.map(
     (it, i) =>
       `<div class="curriculum-item">(${i}) ${it.surah_name_ar} (${it.start_ayah}-${it.end_ayah}) – نقاط: ${it.points || 0}</div>`
   ).join("");
 
-  murajaaCurriculumDisplay.innerHTML = REVIEW_CURRICULUM
-  .map(
-    (it, i) =>
-      `<div class="curriculum-item">(${i}) ${it.name} – نقاط: ${
-        it.points || 0
-      }</div>`
-  )
-  .join("");
-
+  // عرض منهج المراجعة – مستوى واحد فقط (BUILDING)
+  const reviewList = REVIEW_CURRICULUM.BUILDING || [];
+  murajaaCurriculumDisplay.innerHTML = reviewList
+    .map(
+      (it, i) =>
+        `<div class="curriculum-item">(${i}) ${it.name} – نقاط: ${it.points || 0}</div>`
+    )
+    .join("");
 }
+
 
 async function displayParentDashboard(parentCode) {
   try {
