@@ -765,11 +765,12 @@ function renderStudentTasks(student) {
           )
         : submitCurriculumTask(student.code, hifzMission),
 
-    // 👇 إضافة الصوت + إجبار الاستماع قبل الإنجاز
+    // 🟢 هذي الإضافة المهمة:
     audioId: hifzMission.audioId,
     requireAudioFirst: true,
   })
 );
+
 
   }
 
@@ -951,7 +952,7 @@ function buildMissionCard({
 
     const audio = document.createElement("audio");
     audio.src = `${audioId}.mp3`;
-    audio.preload = "auto";
+    audio.preload = "metadata";
 
     const requiredPlays = 3;
     let plays = 0;
