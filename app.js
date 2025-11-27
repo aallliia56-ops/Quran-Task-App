@@ -1824,13 +1824,12 @@ async function loadStudentsForTeacher() {
           <div class="student-sub">ولي الأمر: ${
             s.parent_name || "غير مسجل"
           } (${s.parent_code || "—"})</div>
-          <div class="student-sub">
-            مساعد طالب: ${
-              isStudentAssistant ? "✅ مفعّل" : "❌ غير مفعّل"
-            } | مساعد ولي أمر: ${
-        isParentAssistant ? "✅ مفعّل" : "❌ غير مفعّل"
-      }
+                    <div class="student-sub">
+            مساعد ولي أمر: ${
+              isParentAssistant ? "✅ مفعّل" : "❌ غير مفعّل"
+            }
           </div>
+
           <div class="student-actions">
             <button class="button primary btn-edit-student" data-code="${
               s.code
@@ -1841,9 +1840,6 @@ async function loadStudentsForTeacher() {
             <button class="button btn-toggle-murajaa" data-code="${
               s.code
             }">${murPaused ? "تشغيل المراجعة" : "إيقاف المراجعة"}</button>
-            <button class="button btn-toggle-student-assistant" data-code="${
-              s.code
-            }">${isStudentAssistant ? "إلغاء مساعد (طالب)" : "تفعيل مساعد (طالب)"}</button>
             <button class="button btn-toggle-parent-assistant" data-code="${
               s.code
             }">${isParentAssistant ? "إلغاء مساعد (ولي)" : "تفعيل مساعد (ولي)"}</button>
@@ -1871,13 +1867,6 @@ async function loadStudentsForTeacher() {
       );
     });
 
-    document
-      .querySelectorAll(".btn-toggle-student-assistant")
-      .forEach((btn) => {
-        btn.addEventListener("click", (e) =>
-          toggleStudentFlag(e.target.dataset.code, "is_student_assistant")
-        );
-      });
 
     document
       .querySelectorAll(".btn-toggle-parent-assistant")
@@ -2171,12 +2160,12 @@ async function displayParentDashboard(parentCode) {
     parentScreen.classList.remove("hidden");
 
     // لو هذا ولي أمر مساعد في أي من أبنائه، حمّل مهامه المساعدة
-    const isParentAssistant = all.some(
+        const isParentAssistant = all.some(
       (s) =>
         s.is_parent_assistant &&
-        String(s.parent_code || "") === parentKey &&
-        s.halaqa === currentHalaqa
+        String(s.parent_code || "") === parentKey
     );
+
     if (isParentAssistant) {
       await loadAssistantTasksForCurrentUser();
     } else if (parentAssistantTasksList) {
