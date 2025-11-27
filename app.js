@@ -396,10 +396,14 @@ function getCurrentHifzMission(student) {
     lastIndex: startIndex + segs.length - 1,
     description: `${first.surah_name_ar} (${first.start_ayah}-${last.end_ayah})`,
     points: first.points || 5,
-    audioId: first.audio_id || null,   // ← رقم ملف الصوت (مثلاً 114)
-    requireAudioFirst: !!first.audio_id // ← لو فيه صوت نلزمه يسمع أول
+    audioId: first.audio_id || null,
+    requireAudioFirst: !!first.audio_id,
+    audioKey: student.code
+      ? `hifz_${student.code}_${first.audio_id || startIndex}`
+      : null,          // 👈 مفتاح التخزين في localStorage
   };
 }
+
 
 
 function getNextHifzMission(student) {
@@ -766,10 +770,12 @@ function renderStudentTasks(student) {
             hifzMission.startIndex
           )
         : submitCurriculumTask(student.code, hifzMission),
-    audioId: hifzMission.audioId,           // ← مهم
-    requireAudioFirst: true                 // ← لازم يسمع 3 مرات قبل الإنجاز
+    audioId: hifzMission.audioId,           // 👈 رقم ملف الصوت
+    requireAudioFirst: true,               // 👈 لازم يسمع ٣ مرات قبل الإنجاز
+    audioKey: hifzMission.audioKey,        // 👈 عشان الحفظ في localStorage
   })
 );
+
 
 
   }
@@ -902,6 +908,7 @@ function buildMissionCard({
   disabled = false,
   audioId = null,
   requireAudioFirst = false,
+  audioKey = null,
 }) {
   const card = document.createElement("div");
   card.className = "task-card";
@@ -930,7 +937,7 @@ function buildMissionCard({
   if (disabled) {
     btn.disabled = true;
   } else if (audioId && requireAudioFirst) {
-    // نمنع الإنجاز إلى أن يسمع ٣ مرات
+    // ممنوع الإنجاز قبل ما يكمل عدد الاستماعات
     btn.disabled = true;
   } else {
     btn.addEventListener("click", onClick);
@@ -938,33 +945,42 @@ function buildMissionCard({
 
   footer.appendChild(btn);
 
-  // 🔊 جزء الصوت – يظهر فقط لو فيه audioId
+  // 🔊 جزء الصوت – فقط لو فيه audioId
   if (audioId && body) {
     const audioWrapper = document.createElement("div");
     audioWrapper.style.marginTop = "6px";
     audioWrapper.className = "audio-wrapper";
 
-    // زر تشغيل
     const playBtn = document.createElement("button");
     playBtn.className = "button";
     playBtn.textContent = "استمع للمقطع 🔊";
-
-    // زر إيقاف / إيقاف مؤقت
-    const stopBtn = document.createElement("button");
-    stopBtn.className = "button";
-    stopBtn.textContent = "إيقاف ⏸";
 
     const counter = document.createElement("span");
     counter.style.marginRight = "8px";
 
     const audio = document.createElement("audio");
     audio.src = `${audioId}.mp3`;
-    audio.preload = "auto";     // تحميل مسبق بسيط
-    // لا نضيف controls → الطالب ما يقدر يسحب لنهاية المقطع
+    audio.preload = "auto"; // تحميل خفيف
+    // بدون controls → الطالب ما يقدر يسحب لنهاية المقطع
 
     const requiredPlays = 3;
     let plays = 0;
-    counter.textContent = `0 / ${requiredPlays} مرات استماع`;
+
+    // 🔁 استرجاع العداد من localStorage
+    if (audioKey && typeof localStorage !== "undefined") {
+      const saved = parseInt(localStorage.getItem(audioKey) || "0", 10);
+      if (!Number.isNaN(saved)) {
+        plays = Math.min(saved, requiredPlays);
+      }
+    }
+
+    counter.textContent = `${plays} / ${requiredPlays} مرات استماع`;
+
+    // لو كان أصلاً مكمّل ٣ مرات من قبل → فعل زر الإنجاز
+    if (!disabled && requireAudioFirst && plays >= requiredPlays && btn.disabled) {
+      btn.disabled = false;
+      btn.addEventListener("click", onClick);
+    }
 
     playBtn.addEventListener("click", () => {
       try {
@@ -975,20 +991,17 @@ function buildMissionCard({
       }
     });
 
-    stopBtn.addEventListener("click", () => {
-      try {
-        audio.pause();
-      } catch (e) {
-        console.error("audio pause error", e);
-      }
-    });
-
     audio.addEventListener("ended", () => {
       plays += 1;
       if (plays > requiredPlays) plays = requiredPlays;
+
+      // حفظ في localStorage
+      if (audioKey && typeof localStorage !== "undefined") {
+        localStorage.setItem(audioKey, String(plays));
+      }
+
       counter.textContent = `${plays} / ${requiredPlays} مرات استماع`;
 
-      // إذا كمل ٣ مرات نفك قفل زر الإنجاز
       if (!disabled && requireAudioFirst && plays >= requiredPlays) {
         if (btn.disabled) {
           btn.disabled = false;
@@ -998,7 +1011,6 @@ function buildMissionCard({
     });
 
     audioWrapper.appendChild(playBtn);
-    audioWrapper.appendChild(stopBtn);
     audioWrapper.appendChild(counter);
     audioWrapper.appendChild(audio);
     body.appendChild(audioWrapper);
@@ -1006,6 +1018,7 @@ function buildMissionCard({
 
   return card;
 }
+
 
 
 
