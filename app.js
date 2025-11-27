@@ -937,7 +937,7 @@ function buildMissionCard({
   if (disabled) {
     btn.disabled = true;
   } else if (audioId && requireAudioFirst) {
-    // ممنوع الإنجاز قبل ما يكمل عدد الاستماعات
+    // ممنوع الإنجاز قبل العدد المطلوب من الاستماع
     btn.disabled = true;
   } else {
     btn.addEventListener("click", onClick);
@@ -961,28 +961,39 @@ function buildMissionCard({
     const audio = document.createElement("audio");
     audio.src = `${audioId}.mp3`;
     audio.preload = "auto"; // تحميل خفيف
-    // بدون controls → الطالب ما يقدر يسحب لنهاية المقطع
+    // ما فيه controls → الطالب ما يقدر يسحب المؤشر لنهاية الملف
 
     const requiredPlays = 3;
     let plays = 0;
+    let autoPlaying = false; // هل السلسلة الآلية شغالة الآن؟
 
-    // 🔁 استرجاع العداد من localStorage
+    // استرجاع العداد من localStorage
     if (audioKey && typeof localStorage !== "undefined") {
       const saved = parseInt(localStorage.getItem(audioKey) || "0", 10);
       if (!Number.isNaN(saved)) {
         plays = Math.min(saved, requiredPlays);
       }
     }
-
     counter.textContent = `${plays} / ${requiredPlays} مرات استماع`;
 
-    // لو كان أصلاً مكمّل ٣ مرات من قبل → فعل زر الإنجاز
+    // لو الطالب مكمّل من قبل → فعّل زر الإنجاز
     if (!disabled && requireAudioFirst && plays >= requiredPlays && btn.disabled) {
       btn.disabled = false;
       btn.addEventListener("click", onClick);
     }
 
+    // ضغطة واحدة تبدأ سلسلة 3 مرات
     playBtn.addEventListener("click", () => {
+      // لو كان خلص 3 سابقًا وودك تعيده من جديد → نرجّع العداد للصفر
+      if (plays >= requiredPlays) {
+        plays = 0;
+        if (audioKey && typeof localStorage !== "undefined") {
+          localStorage.setItem(audioKey, "0");
+        }
+        counter.textContent = `0 / ${requiredPlays} مرات استماع`;
+      }
+
+      autoPlaying = true;
       try {
         audio.currentTime = 0;
         audio.play();
@@ -992,6 +1003,8 @@ function buildMissionCard({
     });
 
     audio.addEventListener("ended", () => {
+      if (!autoPlaying) return; // لو كان التشغيل مو من السلسلة الآلية نتجاهل
+
       plays += 1;
       if (plays > requiredPlays) plays = requiredPlays;
 
@@ -1002,8 +1015,20 @@ function buildMissionCard({
 
       counter.textContent = `${plays} / ${requiredPlays} مرات استماع`;
 
-      if (!disabled && requireAudioFirst && plays >= requiredPlays) {
-        if (btn.disabled) {
+      if (plays < requiredPlays) {
+        // نعيد المقطع تلقائيًا
+        try {
+          audio.currentTime = 0;
+          audio.play();
+        } catch (e) {
+          console.error("audio replay error", e);
+        }
+      } else {
+        // خلصنا 3 مرات
+        autoPlaying = false;
+        playBtn.textContent = "إعادة الاستماع 🔁";
+
+        if (!disabled && requireAudioFirst && btn.disabled) {
           btn.disabled = false;
           btn.addEventListener("click", onClick);
         }
@@ -1018,6 +1043,7 @@ function buildMissionCard({
 
   return card;
 }
+
 
 
 
