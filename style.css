@@ -363,3 +363,139 @@ h1 { text-align: center; margin-bottom: 10px; }
 #student-murajaa-progress-label {
   display: none !important;
 }
+
+/* ==========================================
+   🎨 ستايل الأطفال – صفحة الطالب فقط
+   ========================================== */
+
+/* خلفية صفحة الطالب */
+#student-screen {
+  background: #FFF7E5;
+  padding-bottom: 40px;
+}
+
+/* الهيدر */
+#student-screen .dashboard-header {
+  background: #FFB100;
+  padding: 16px;
+  border-radius: 0 0 20px 20px;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+#student-screen .dashboard-header h2 {
+  color: #fff;
+  font-weight: 700;
+}
+
+#student-screen .dashboard-header p {
+  color: #FFEEC5;
+  font-weight: 600;
+}
+
+/* شريط الخطة */
+#student-plan-strip {
+  background: #FFCF70;
+  color: #6A4B00;
+  padding: 8px 12px;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* بطاقات التقدم */
+#student-screen .progress-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  border-top: 6px solid #FFB100;
+  margin-top: 16px;
+}
+
+/* عنوان البطاقة */
+#student-screen .progress-card h3 {
+  color: #D98600;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* نصوص المهمة */
+#student-screen .progress-card p {
+  color: #444;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* شريط التقدم */
+#student-screen .progress-bar {
+  background: #FFE6B6;
+  border-radius: 10px;
+}
+
+#student-screen .progress-fill {
+  background: #FFB100 !important;
+}
+
+/* مهامي */
+#student-screen h3 {
+  color: #D98600;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+/* بطاقات المهام */
+#student-screen .task-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  border-right: 8px solid #6EC5FF;
+  margin-bottom: 18px;
+}
+
+/* نص المهمة */
+#student-screen .task-card .task-body {
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* أزرار الإنجاز */
+#student-screen .button.primary {
+  background: #6EC5FF;
+  color: #fff;
+  border-radius: 14px;
+  padding: 8px 14px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+#student-screen .button.primary:hover {
+  background: #4BA5D6;
+}
+
+/* زر تسجيل الخروج */
+#student-screen .button.danger {
+  background: #FF6F91;
+  border-radius: 14px;
+}
+
+#student-screen .button.danger:hover {
+  background: #FF3D6E;
+}
+
+/* رسالة لا توجد مهام */
+#student-screen .message.info {
+  background: #6EC5FF;
+  color: #fff;
+  border-radius: 14px;
+}
+
+/* صوت المهمة */
+#student-screen audio {
+  width: 100%;
+  margin-top: 10px;
+  background: #FFF1D8;
+  border-radius: 16px;
+  padding: 6px;
+}
