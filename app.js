@@ -76,30 +76,20 @@ const studentTabButtons = document.querySelectorAll(".student-tab-button");
 if (studentAssistantTabSection) {
   studentAssistantTabSection.classList.add("hidden");
 }
-studentTabButtons.forEach((btn) => {
-  if (btn.dataset.tab === "student-assistant-tab") {
-    btn.classList.add("hidden");
-  }
-});
+// ما فيه تبويبات للطالب – دائماً "مهامي"
+studentTabButtons.forEach((btn) => btn.classList.add("hidden"));
 
-function activateStudentTab(tabId) {
-  if (!studentMainTasksSection) return;
 
-  // دائماً نظهر مهامي فقط
-  studentMainTasksSection.classList.remove("hidden");
+function activateStudentTab() {
+  // دائماً نظهر صفحة المهام فقط
+  if (studentMainTasksSection) studentMainTasksSection.classList.remove("hidden");
   if (studentAssistantTabSection) studentAssistantTabSection.classList.add("hidden");
 
-  // نخلي زر "مهامي" هو النشط دائماً
-  studentTabButtons.forEach((btn) =>
-    btn.classList.toggle("active", btn.dataset.tab === "student-main-tasks")
-  );
-
-  // كروت التقدم تظهر دائماً
+  // كروت التقدم دائماً ظاهرة
   const progressSection = document.querySelector(".progress-section");
-  if (progressSection) {
-    progressSection.classList.remove("hidden");
-  }
+  if (progressSection) progressSection.classList.remove("hidden");
 }
+
 
 
 
