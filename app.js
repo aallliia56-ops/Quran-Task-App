@@ -941,7 +941,7 @@ function buildMissionCard({
         plays = Math.min(saved, requiredPlays);
       }
     }
-    counter.textContent = `${plays} / ${requiredPlays} مرات استماع`;
+    counter.textContent = `${plays} / ${requiredPlays}  استماع`;
 
     // لو الطالب مكمّل من قبل → فعّل زر الإنجاز
     if (!disabled && requireAudioFirst && plays >= requiredPlays && btn.disabled) {
@@ -957,7 +957,7 @@ function buildMissionCard({
         if (audioKey && typeof localStorage !== "undefined") {
           localStorage.setItem(audioKey, "0");
         }
-        counter.textContent = `0 / ${requiredPlays} مرات استماع`;
+        counter.textContent = `0 / ${requiredPlays}  استماع`;
       }
 
       autoPlaying = true;
@@ -980,7 +980,7 @@ function buildMissionCard({
         localStorage.setItem(audioKey, String(plays));
       }
 
-      counter.textContent = `${plays} / ${requiredPlays} مرات استماع`;
+      counter.textContent = `${plays} / ${requiredPlays}  استماع`;
 
       if (plays < requiredPlays) {
         // نعيد المقطع تلقائيًا
