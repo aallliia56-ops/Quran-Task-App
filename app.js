@@ -72,39 +72,35 @@ const parentAssistantTasksList = $("#parent-assistant-tasks");
 const studentMainTasksSection = $("#student-main-tasks");
 const studentAssistantTabSection = $("#student-assistant-tab");
 const studentTabButtons = document.querySelectorAll(".student-tab-button");
+// إخفاء تبويب مهام المساعد في صفحة الطالب نهائياً
+if (studentAssistantTabSection) {
+  studentAssistantTabSection.classList.add("hidden");
+}
+studentTabButtons.forEach((btn) => {
+  if (btn.dataset.tab === "student-assistant-tab") {
+    btn.classList.add("hidden");
+  }
+});
 
 function activateStudentTab(tabId) {
-  if (!studentMainTasksSection || !studentAssistantTabSection) return;
+  if (!studentMainTasksSection) return;
 
-  // إظهار / إخفاء أقسام المهام
-  studentMainTasksSection.classList.toggle(
-    "hidden",
-    tabId !== "student-main-tasks"
-  );
-  studentAssistantTabSection.classList.toggle(
-    "hidden",
-    tabId !== "student-assistant-tab"
-  );
+  // دائماً نظهر مهامي فقط
+  studentMainTasksSection.classList.remove("hidden");
+  if (studentAssistantTabSection) studentAssistantTabSection.classList.add("hidden");
 
-  // تفعيل زر التبويب
+  // نخلي زر "مهامي" هو النشط دائماً
   studentTabButtons.forEach((btn) =>
-    btn.classList.toggle("active", btn.dataset.tab === tabId)
+    btn.classList.toggle("active", btn.dataset.tab === "student-main-tasks")
   );
 
-  // إظهار / إخفاء كروت التقدم (الحفظ / المراجعة)
+  // كروت التقدم تظهر دائماً
   const progressSection = document.querySelector(".progress-section");
   if (progressSection) {
-    progressSection.classList.toggle(
-      "hidden",
-      tabId === "student-assistant-tab"
-    );
-  }
-
-  // عند فتح تبويب مهام المساعد، نحدّث القائمة
-  if (tabId === "student-assistant-tab") {
-    loadAssistantTasksForCurrentUser();
+    progressSection.classList.remove("hidden");
   }
 }
+
 
 
 // ربط أزرار تبويبات الطالب
@@ -685,11 +681,11 @@ async function displayStudentDashboard(student) {
     studentScreen.classList.remove("hidden");
 
     // لو الطالب مفعّل كمساعد، حمّل مهامه المساعدة
-    if (student.is_student_assistant) {
-      await loadAssistantTasksForCurrentUser();
-    } else if (studentAssistantTasksList) {
+        // صفحة الطالب لا تعرض مهام المساعد نهائياً
+    if (studentAssistantTasksList) {
       studentAssistantTasksList.innerHTML = "";
     }
+
   } catch (err) {
     console.error("displayStudentDashboard error:", err);
     showMessage(
