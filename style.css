@@ -499,3 +499,138 @@ h1 { text-align: center; margin-bottom: 10px; }
   border-radius: 16px;
   padding: 6px;
 }
+/* ============================================================
+   🎨 ستايل صفحة الطالب فقط — هوية السماوي الهادئ
+   ============================================================ */
+
+/* خلفية صفحة الطالب */
+#student-screen {
+  background: #F4F9FF;  /* سماوي باهت جداً */
+  padding-bottom: 40px;
+}
+
+/* الهيدر */
+#student-screen .dashboard-header {
+  background: #DDEBFF; /* سماوي باهت */
+  padding: 18px;
+  border-radius: 0 0 18px 18px;
+  color: #2C3E50;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+#student-screen .dashboard-header h2 {
+  color: #1C2C3A;
+  font-weight: 700;
+}
+
+#student-screen .dashboard-header p {
+  color: #4F6A85;
+  font-weight: 600;
+}
+
+/* شريط الخطة */
+#student-plan-strip {
+  background: #E8F2FF;
+  color: #45627A;
+  padding: 8px 12px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* بطاقات التقدم */
+#student-screen .progress-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #E1EAF5;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* عنوان البطاقة */
+#student-screen .progress-card h3 {
+  color: #2C4F70;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* النصوص داخل البطاقة */
+#student-screen .progress-card p {
+  color: #486078;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* شريط التقدم */
+#student-screen .progress-bar {
+  background: #E4EEFA;
+  height: 10px;
+  border-radius: 8px;
+}
+
+#student-screen .progress-fill {
+  background: #6AA9E9 !important; /* سماوي متوسط */
+}
+
+/* عناوين الأقسام */
+#student-screen h3 {
+  color: #32567A;
+  font-size: 19px;
+  margin-bottom: 10px;
+}
+
+/* بطاقات المهام */
+#student-screen .task-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid #E3E9F1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 12px;
+}
+
+/* نص المهمة */
+#student-screen .task-body {
+  color: #3F5570;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* زر الإنجاز */
+#student-screen .button.primary {
+  background: #6AA9E9;
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 700;
+}
+
+#student-screen .button.primary:hover {
+  background: #5895CF;
+}
+
+/* زر الخروج */
+#student-screen .button.danger {
+  background: #FF6F7A;
+  border-radius: 12px;
+}
+
+#student-screen .button.danger:hover {
+  background: #E35762;
+}
+
+/* رسالة لا توجد مهام */
+#student-screen .message.info {
+  background: #DDEBFF;
+  color: #345574;
+  border-radius: 12px;
+}
+
+/* مشغل الصوت */
+#student-screen audio {
+  width: 100%;
+  margin-top: 10px;
+  background: #F0F5FB;
+  border-radius: 10px;
+  padding: 5px;
+}
+
