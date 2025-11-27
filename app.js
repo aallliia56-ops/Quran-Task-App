@@ -920,7 +920,7 @@ function buildMissionCard({
 
     const playBtn = document.createElement("button");
     playBtn.className = "button";
-    playBtn.textContent = "استمع للمقطع 🔊";
+    playBtn.textContent = "🔊";
 
     const counter = document.createElement("span");
     counter.style.marginRight = "8px";
