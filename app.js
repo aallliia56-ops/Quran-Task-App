@@ -993,7 +993,7 @@ function buildMissionCard({
       } else {
         // خلصنا 3 مرات
         autoPlaying = false;
-        playBtn.textContent = "إعادة الاستماع 🔁";
+        playBtn.textContent = "🔁";
 
         if (!disabled && requireAudioFirst && btn.disabled) {
           btn.disabled = false;
