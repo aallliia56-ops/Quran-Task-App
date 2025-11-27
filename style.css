@@ -508,6 +508,18 @@ h1 { text-align: center; margin-bottom: 10px; }
 #student-screen .task-header{
   margin-bottom: 6px;
 }
+/* توسيط زر إنجاز المهمة داخل كرت المهمة (صفحة الطالب فقط) */
+#student-screen .task-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center !important; /* توسيط أفقي */
+  align-items: center;
+}
+
+#student-screen .task-footer .button.primary {
+  width: auto;
+  text-align: center;
+}
 
 #student-screen .task-footer{
   margin-top: 10px;
