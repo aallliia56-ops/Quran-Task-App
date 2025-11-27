@@ -506,7 +506,7 @@ function computeMurajaaPercent(student) {
 
 /** تحميل مهام المساعد لأي مستخدم حالي (طالب أو ولي أمر) */
 async function loadAssistantTasksForCurrentUser() {
-  if (!currentUser) return;
+  if (!currentUser || currentUser.role !== "parent") return;
 
   const snap = await getDocs(collection(db, "students"));
   const assigned = [];
@@ -517,13 +517,6 @@ async function loadAssistantTasksForCurrentUser() {
     tasks.forEach((t) => {
       if (t.status !== "pending_assistant") return;
       if (
-        currentUser.role === "student" &&
-        t.assistant_type === "student" &&
-        t.assistant_code === currentUser.code
-      ) {
-        assigned.push({ student: s, task: t });
-      } else if (
-        currentUser.role === "parent" &&
         t.assistant_type === "parent" &&
         String(t.assistant_code || "") === String(currentUser.code)
       ) {
@@ -532,22 +525,10 @@ async function loadAssistantTasksForCurrentUser() {
     });
   });
 
-  if (currentUser.role === "student") {
-    if (!studentAssistantTasksList) return;
-    renderAssistantTasksList(
-      assigned,
-      studentAssistantTasksList,
-      "طالب"
-    );
-  } else if (currentUser.role === "parent") {
-    if (!parentAssistantTasksList) return;
-    renderAssistantTasksList(
-      assigned,
-      parentAssistantTasksList,
-      "ولي الأمر"
-    );
-  }
+  if (!parentAssistantTasksList) return;
+  renderAssistantTasksList(assigned, parentAssistantTasksList, "ولي الأمر");
 }
+
 
 /** رسم قائمة مهام المساعد */
 function renderAssistantTasksList(list, container, roleLabel) {
@@ -1264,24 +1245,13 @@ async function showAssistantSelector(studentCode, taskId, containerEl) {
     }
 
     // جلب كل الطلاب للبحث عن المساعدين في نفس الحلقة الحالية
+        // جلب أولياء الأمور المفعّلين كمساعدين
     const snapAll = await getDocs(collection(db, "students"));
     const assistants = [];
 
     snapAll.forEach((d) => {
       const s = d.data();
-      const h = s.halaqa || "ONSITE";
-      if (h !== currentHalaqa) return;
-
-      // طالب مساعد
-      if (s.is_student_assistant) {
-        assistants.push({
-          type: "student",
-          id: s.code,
-          label: `طالب: ${s.name || s.code} (${s.code})`,
-        });
-      }
-
-      // ولي أمر مساعد
+      // ما نهتم بنوع الحلقة هنا، فقط لو ولي الأمر مفعّل
       if (s.is_parent_assistant && s.parent_code) {
         assistants.push({
           type: "parent",
@@ -1290,6 +1260,7 @@ async function showAssistantSelector(studentCode, taskId, containerEl) {
         });
       }
     });
+
 
     if (!assistants.length) {
       alert("لا يوجد مساعدين مفعّلين في هذه الحلقة.");
