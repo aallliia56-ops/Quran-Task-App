@@ -441,3 +441,75 @@ h1 { text-align: center; margin-bottom: 10px; }
   border-radius: 10px;
   padding: 5px;
 }
+
+/* 1) توزيع بطاقات التقدم في صفين للطالب (شكل لوحة واضحة) */
+#student-screen .progress-section{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+/* على الجوال ترجع عمود واحد */
+@media (max-width: 600px){
+  #student-screen .progress-section{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 2) جعل مهمة الحفظ/المراجعة بارزة في وسط البطاقة */
+#student-screen .progress-card .next-mission{
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #F4F9FF;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* 3) إبراز كارت المهمة الحالية وجعلها أكبر قليلاً */
+#student-screen .tasks-list .task-card:first-child{
+  border-right-width: 6px;
+  transform: translateY(-2px);
+}
+
+#student-screen .tasks-list .task-card:first-child .task-title{
+  font-size: 1rem;
+}
+
+/* 4) جعل نص المهمة في وسط الكارت كفقاعة واضحة */
+#student-screen .task-body.mission-text{
+  text-align: center;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #F0F5FB;
+  font-size: 1.1rem;
+}
+
+/* 5) شريط علوي صغير فوق قائمة المهام (عنوان بصري للقسم) */
+#student-screen .tasks-section{
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 2px dashed #E1EAF5;
+}
+
+#student-screen .tasks-section h3{
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #E8F2FF;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+/* 6) تباعد أوضح داخل كرت المهمة بين السطر العلوي والزر */
+#student-screen .task-header{
+  margin-bottom: 6px;
+}
+
+#student-screen .task-footer{
+  margin-top: 10px;
+  justify-content: space-between;
+}
