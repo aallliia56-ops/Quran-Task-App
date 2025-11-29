@@ -704,6 +704,7 @@ async function displayStudentDashboard(student) {
     safeSetText(els.murPct, `${murPct}%`);
     safeSetWidth(els.hifzBar, hifzPct);
     safeSetWidth(els.murBar, murPct);
+    updateStudentCircles(student, hifzPct, murPct);
 
     safeSetText(els.totalPoints, points);
     safeSetText(els.rankText, rankOnly);
