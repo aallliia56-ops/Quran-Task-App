@@ -617,6 +617,10 @@ function renderAssistantTasksList(list, container, roleLabel) {
 
 async function displayStudentDashboard(student) {
   try {
+    // ✅ احسب النِّسَب في الأول
+    const hifzPct = computeHifzPercent(student);
+    const murPct = computeMurajaaPercent(student);
+
     const els = getStudentEls();
 
     safeSetText(els.welcome, `أهلاً بك يا ${student.name || "طالب"}`);
@@ -666,7 +670,6 @@ async function displayStudentDashboard(student) {
       els.murLabel,
       murMission ? murMission.description : "لا توجد مهمة مراجعة حالياً."
     );
-    updateStudentCircles(student, hifzPct, murPct);
 
     if (els.murLevel) {
       safeSetText(
@@ -692,19 +695,11 @@ async function displayStudentDashboard(student) {
       `المهمة القادمة: ${nextM ? nextM.description : "—"}`
     );
 
-        // ================= النِّسَب =================
-    const hifzPct = computeHifzPercent(student);
-    const murPct = computeMurajaaPercent(student);
-
-    // دوائر الطالب (التصميم الجديد)
-    updateStudentCircles(student, hifzPct, murPct);
-
-    // الشريط القديم (لو حاب تبقيه)
+    // ✅ استخدام النِّسَب المحسوبة في الأعلى
     safeSetText(els.hifzPct, hifzPct);
     safeSetText(els.murPct, murPct);
     safeSetWidth(els.hifzBar, hifzPct);
     safeSetWidth(els.murBar, murPct);
-
 
     safeSetText(els.totalPoints, points);
     safeSetText(els.rankText, rankOnly);
@@ -718,7 +713,6 @@ async function displayStudentDashboard(student) {
     if (studentAssistantTasksList) {
       studentAssistantTasksList.innerHTML = "";
     }
-
   } catch (err) {
     console.error("displayStudentDashboard error:", err);
     showMessage(
@@ -728,6 +722,7 @@ async function displayStudentDashboard(student) {
     );
   }
 }
+
 
 function renderStudentTasks(student) {
   studentTasksDiv.innerHTML = "";
