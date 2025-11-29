@@ -927,3 +927,22 @@ body {
   align-self: flex-end;
   margin-bottom: 8px;
 }
+/* ضبط شكل منطقة الفوتر */
+.task-card .task-footer {
+  display: flex;
+  justify-content: space-between; /* يفصل النقاط يمين والزر يسار */
+  align-items: center;
+  margin-top: 14px;
+  width: 100%;
+}
+
+/* النقاط يمين */
+.task-card .task-points-tag {
+  margin: 0;
+  order: 1;
+}
+
+/* زر إنجاز المهمة يسار */
+.task-card .task-footer button {
+  order: 2;
+}
