@@ -692,12 +692,19 @@ async function displayStudentDashboard(student) {
       `المهمة القادمة: ${nextM ? nextM.description : "—"}`
     );
 
+        // ================= النِّسَب =================
     const hifzPct = computeHifzPercent(student);
     const murPct = computeMurajaaPercent(student);
+
+    // دوائر الطالب (التصميم الجديد)
+    updateStudentCircles(student, hifzPct, murPct);
+
+    // الشريط القديم (لو حاب تبقيه)
     safeSetText(els.hifzPct, hifzPct);
     safeSetText(els.murPct, murPct);
     safeSetWidth(els.hifzBar, hifzPct);
     safeSetWidth(els.murBar, murPct);
+
 
     safeSetText(els.totalPoints, points);
     safeSetText(els.rankText, rankOnly);
