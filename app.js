@@ -22,7 +22,7 @@ const firebaseConfig = {
   storageBucket: "quran-578e0.firebasestorage.app",
   messagingSenderId: "74138658048",
   appId: "1:74138658048:web:2b6591145ff4cf17003fe5",
-  measurementId: "G-95XTLNR0LE"
+  measurementId: "G-95XTLNR0LE",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -487,6 +487,7 @@ function computeMurajaaPercent(student) {
   const dist = (prog - start + len) % len;
   return Math.round((dist / len) * 100);
 }
+
 function updateStudentCircles(student, hifzPct, murPct) {
   // عناصر الحفظ
   const hCircle = document.getElementById("hifz-circle");
@@ -621,6 +622,9 @@ async function displayStudentDashboard(student) {
     const hifzPct = computeHifzPercent(student);
     const murPct = computeMurajaaPercent(student);
 
+    // ✅ حدّث الدوائر العلوية (الشكل اللي في الصورة)
+    updateStudentCircles(student, hifzPct, murPct);
+
     const els = getStudentEls();
 
     safeSetText(els.welcome, `أهلاً بك يا ${student.name || "طالب"}`);
@@ -695,9 +699,9 @@ async function displayStudentDashboard(student) {
       `المهمة القادمة: ${nextM ? nextM.description : "—"}`
     );
 
-    // ✅ استخدام النِّسَب المحسوبة في الأعلى
-    safeSetText(els.hifzPct, hifzPct);
-    safeSetText(els.murPct, murPct);
+    // ✅ استخدام النِّسَب المحسوبة في الأعلى للي تحت (الشريط الأزرق)
+    safeSetText(els.hifzPct, `${hifzPct}%`);
+    safeSetText(els.murPct, `${murPct}%`);
     safeSetWidth(els.hifzBar, hifzPct);
     safeSetWidth(els.murBar, murPct);
 
@@ -722,7 +726,6 @@ async function displayStudentDashboard(student) {
     );
   }
 }
-
 
 function renderStudentTasks(student) {
   studentTasksDiv.innerHTML = "";
@@ -1023,8 +1026,6 @@ function buildMissionCard({
   return card;
 }
 
-
-
 async function submitCurriculumTask(studentCode, mission) {
   try {
     const studentRef = doc(db, "students", studentCode);
@@ -1041,11 +1042,7 @@ async function submitCurriculumTask(studentCode, mission) {
           t.mission_start === mission.startIndex
       )
     ) {
-      showMessage(
-        authMessage,
-        "المهمة قيد المراجعة بالفعل.",
-        "info"
-      );
+      showMessage(authMessage, "المهمة قيد المراجعة بالفعل.", "info");
       return;
     }
 
@@ -1115,11 +1112,7 @@ async function submitMurajaaTask(studentCode, mission) {
           t.murajaa_level === mission.level
       )
     ) {
-      showMessage(
-        authMessage,
-        "مهمة المراجعة قيد المراجعة بالفعل.",
-        "info"
-      );
+      showMessage(authMessage, "مهمة المراجعة قيد المراجعة بالفعل.", "info");
       return;
     }
 
@@ -1187,11 +1180,7 @@ async function submitGeneralTask(studentCode, taskId) {
       tasks[i].status === "pending" ||
       tasks[i].status === "pending_assistant"
     ) {
-      showMessage(
-        authMessage,
-        "المهمة قيد المراجعة بالفعل.",
-        "info"
-      );
+      showMessage(authMessage, "المهمة قيد المراجعة بالفعل.", "info");
       return;
     }
 
@@ -1219,11 +1208,7 @@ async function cancelGeneralTask(studentCode, taskId) {
     if (tasks[i].status === "pending") tasks[i].status = "assigned";
     await updateDoc(studentRef, { tasks });
     await displayStudentDashboard({ code: studentCode, ...student, tasks });
-    showMessage(
-      authMessage,
-      "تم إلغاء إرسال المهمة العامة.",
-      "success"
-    );
+    showMessage(authMessage, "تم إلغاء إرسال المهمة العامة.", "success");
   } catch (e) {
     console.error("Error cancelGeneralTask:", e);
     showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
@@ -1241,7 +1226,7 @@ async function showAssistantSelector(studentCode, taskId, containerEl) {
     }
 
     // جلب كل الطلاب للبحث عن المساعدين في نفس الحلقة الحالية
-        // جلب أولياء الأمور المفعّلين كمساعدين
+    // جلب أولياء الأمور المفعّلين كمساعدين
     const snapAll = await getDocs(collection(db, "students"));
     const assistants = [];
 
@@ -1256,7 +1241,6 @@ async function showAssistantSelector(studentCode, taskId, containerEl) {
         });
       }
     });
-
 
     if (!assistants.length) {
       alert("لا يوجد مساعدين مفعّلين في هذه الحلقة.");
@@ -1464,7 +1448,7 @@ async function forwardTaskToAssistant(
       ...task,
       status: "pending_assistant",
       assistant_type: assistantType, // "student" أو "parent"
-      assistant_code: assistantId,   // رمز الطالب أو ولي الأمر
+      assistant_code: assistantId, // رمز الطالب أو ولي الأمر
     };
 
     await updateDoc(studentRef, { tasks });
@@ -1575,11 +1559,7 @@ async function reviewTask(studentCode, taskId, action) {
     }
     const task = tasks[i];
     if (task.status !== "pending" && task.status !== "pending_assistant") {
-      showMessage(
-        authMessage,
-        "المهمة ليست بانتظار المراجعة.",
-        "error"
-      );
+      showMessage(authMessage, "المهمة ليست بانتظار المراجعة.", "error");
       return;
     }
 
@@ -1863,7 +1843,6 @@ async function loadStudentsForTeacher() {
       );
     });
 
-
     document
       .querySelectorAll(".btn-toggle-parent-assistant")
       .forEach((btn) => {
@@ -2048,7 +2027,6 @@ function displayCurriculumsInTeacherPanel() {
     .join("");
 }
 
-
 async function displayParentDashboard(parentCode) {
   try {
     const snap = await getDocs(collection(db, "students"));
@@ -2156,7 +2134,7 @@ async function displayParentDashboard(parentCode) {
     parentScreen.classList.remove("hidden");
 
     // لو هذا ولي أمر مساعد في أي من أبنائه، حمّل مهامه المساعدة
-        const isParentAssistant = all.some(
+    const isParentAssistant = all.some(
       (s) =>
         s.is_parent_assistant &&
         String(s.parent_code || "") === parentKey
