@@ -33,6 +33,7 @@ h4 {
   margin: 0 0 15px;
   color: #2c3e50;
 }
+
 h1 {
   text-align: center;
   margin-bottom: 10px;
@@ -43,46 +44,9 @@ h1 {
   font-size: 0.9rem;
   color: #7f8c8d;
 }
+
 .hidden {
   display: none !important;
-}
-
-/* ========== شريط الخطة (ملصقات) ========== */
-.plan-strip {
-  margin-top: -6px;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-  color: #586a7a;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.plan-strip .dot {
-  opacity: 0.5;
-}
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  line-height: 1;
-  background: #f4f6f8;
-  border: 1px solid #e5e7eb;
-}
-.badge-plan {
-  background: #eef7ff;
-  border-color: #d5e9ff;
-}
-.badge-points {
-  background: #f6ffed;
-  border-color: #e2f7d3;
-}
-.badge-rank {
-  background: #fff3e6;
-  border-color: #ffe0bf;
 }
 
 /* ========== رسائل ========== */
@@ -143,16 +107,6 @@ h1 {
   box-shadow: none;
 }
 
-.button.secondary {
-  background: #95a5a6;
-  color: #fff;
-}
-.delegated-info {
-  font-size: 0.8rem;
-  color: #8e44ad;
-  margin-top: 3px;
-}
-
 /* ========== إدخال ========== */
 .input-group {
   margin-bottom: 15px;
@@ -197,64 +151,52 @@ h1 {
   flex-wrap: wrap;
   gap: 8px;
 }
-
-/* ========== التقدم (بطاقتان فقط) ========== */
-.progress-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.progress-card {
-  background: #f9fbff;
-  padding: 10px 12px;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.progress-card.hifz {
-  border-right: 4px solid #2ecc71;
-}
-.progress-card.murajaa {
-  border-right: 4px solid #ffb74d;
+.header-actions .button {
+  padding: 6px 10px;
+  font-size: 0.85rem;
 }
 
-/* صف واحد: الشريط + النسبة */
-.progress-inline {
+/* ========== شريط الخطة (ملصقات) ========== */
+.plan-strip {
+  margin-top: -6px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #586a7a;
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
+  flex-wrap: wrap;
 }
-.progress-bar {
-  flex: 1;
-  height: 8px;
-  background: #e0e6ed;
+.plan-strip .dot {
+  opacity: 0.5;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  overflow: hidden;
+  font-size: 0.9rem;
+  line-height: 1;
+  background: #f4f6f8;
+  border: 1px solid #e5e7eb;
 }
-.progress-fill {
-  height: 100%;
-  width: 0;
-  background: linear-gradient(90deg, #3498db, #2ecc71);
-  transition: width 0.4s ease;
+.badge-plan {
+  background: #eef7ff;
+  border-color: #d5e9ff;
 }
-.progress-percent {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  min-width: 3ch;
+.badge-points {
+  background: #f6ffed;
+  border-color: #e2f7d3;
+}
+.badge-rank {
+  background: #fff3e6;
+  border-color: #ffe0bf;
 }
 
-/* النص تحت الشريط */
-.small-text {
-  font-size: 0.8rem;
-  color: #7f8c8d;
-}
-.next-mission {
-  margin: 0.4rem 0 0;
-  font-size: 0.85rem;
-  color: #2c3e50;
-  font-weight: 700;
+/* إخفاء الترتيب من شريط الخطة (زر الترتيب) */
+#strip-rank {
+  display: none !important;
 }
 
 /* ========== مهامي (طالب) ========== */
@@ -510,6 +452,21 @@ h1 {
   margin: 6px 0 4px;
 }
 
+/* شريط التقدم العام (يستخدم في ولي الأمر وغيره) */
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e0e6ed;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  transition: width 0.4s ease;
+}
+
 /* ========== شاشات كبيرة ========== */
 @media (min-width: 768px) {
   .container {
@@ -526,37 +483,9 @@ h1 {
   .tab-button {
     flex: 1;
   }
-  .progress-section {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
   .curriculum-view {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-
-/* اختيار الحلقة (حضوري / إلكتروني) */
-.halaqa-toggle {
-  margin-top: 8px;
-  display: flex;
-  gap: 6px;
-}
-
-.halaqa-btn {
-  border: none;
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: #ecf5ff;
-  color: #34495e;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.halaqa-btn.active {
-  background: #3498db;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* ========== شبكة طلاب الحلقة ========== */
@@ -566,7 +495,6 @@ h1 {
   gap: 10px;
   margin-top: 10px;
 }
-
 .halaqa-tile {
   background: #fff;
   border-radius: 12px;
@@ -578,7 +506,6 @@ h1 {
   font-size: 0.9rem;
   text-align: center;
 }
-
 .halaqa-tile:hover {
   transform: translateY(-2px);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
@@ -593,11 +520,6 @@ h1 {
   color: #555;
 }
 
-/* نص خافت للملاحظات الصغيرة */
-.small-text.muted {
-  color: #9aa4b2;
-}
-
 /* قائمة اختيار المساعد (تُستخدم عند المعلم) */
 .assistant-picker select {
   padding: 6px 8px;
@@ -606,7 +528,7 @@ h1 {
   font-size: 0.85rem;
 }
 
-/* إخفاء عنواني مهمة الحفظ/المراجعة في كروت التقدم */
+/* إخفاء عنواني مهمة الحفظ/المراجعة في كروت التقدم القديمة */
 #student-hifz-progress-label,
 #student-murajaa-progress-label {
   display: none !important;
@@ -618,22 +540,26 @@ h1 {
 
 /* خلفية صفحة الطالب */
 #student-screen {
-  background: #f4f9ff; /* سماوي باهت جداً */
+  background: #f4f9ff;
   padding-bottom: 40px;
 }
 
-/* الهيدر */
+/* الهيدر في صفحة الطالب */
 #student-screen .dashboard-header {
-  background: #dde
-/* 🔵 بطاقات الدوائر أعلى صفحة الطالب */
+  background: #ddefff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: -10px -10px 15px;
+  border-bottom: none;
+}
 
+/* 🔵 بطاقات الدوائر أعلى صفحة الطالب */
 #student-screen .progress-section {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin: 10px 0 14px;
 }
-
 @media (max-width: 600px) {
   #student-screen .progress-section {
     grid-template-columns: 1fr;
@@ -697,14 +623,12 @@ h1 {
 .circle-info {
   flex: 1;
 }
-
 .circle-title {
   font-weight: 700;
   font-size: 0.9rem;
   margin-bottom: 2px;
   color: #32567A;
 }
-
 .circle-sub {
   font-size: 0.8rem;
   color: #7f8c8d;
@@ -719,7 +643,6 @@ h1 {
   background: #ECF0F1;
   overflow: hidden;
 }
-
 .mini-bar-fill {
   height: 100%;
   width: 0;
@@ -733,4 +656,31 @@ h1 {
 }
 #mur-circle-card .mini-bar-fill {
   background: #F5A623;
+}
+
+/* ========== أيقونات التحديث / تسجيل الخروج في أعلى اليسار ========== */
+.icon-actions {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 999;
+}
+
+.icon-button {
+  background: #ffffffcc;
+  backdrop-filter: blur(4px);
+  border: 1px solid #dcdcdc;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-button:hover {
+  background: #f2f2f2;
 }
