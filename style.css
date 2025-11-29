@@ -684,3 +684,119 @@ h1 {
 .icon-button:hover {
   background: #f2f2f2;
 }
+
+/* ========== صفحة ولي الأمر - تنظيم جديد ========== */
+#parent-screen {
+  background: #f4f9ff;
+}
+
+/* تخطيط عمودين (أبناء + مهام مساعد) */
+.parent-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.parent-column {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.parent-column.main {
+  flex: 2;
+}
+
+.parent-column.side {
+  flex: 1;
+}
+
+.section-title {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+@media (min-width: 900px) {
+  .parent-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* كرت كل ابن */
+.child-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  margin-bottom: 10px;
+  background: #f9fbff;
+  border: 1px solid #e0e7ff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+}
+
+/* شريط جانبي صغير يميز الكرت */
+.child-card::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, #3b82f6, #22c55e);
+}
+
+/* اسم الابن */
+.child-name {
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* سطور المعلومات */
+.child-line {
+  font-size: 0.85rem;
+  margin: 2px 0;
+  color: #4b5563;
+}
+
+/* شارة نوع الحلقة */
+.child-line strong {
+  font-weight: 700;
+}
+
+/* شريط التقدم داخل كرت الابن */
+.child-card .progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+  margin: 6px 0 4px;
+}
+
+.child-card .progress-fill {
+  background: linear-gradient(90deg, #3b82f6, #22c55e);
+}
+
+/* جملة التحفيز */
+.child-card .child-line:last-of-type {
+  margin-top: 4px;
+}
+
+/* مهام المساعد – نفس ستايل مراجعة المهام تقريبًا */
+#parent-assistant-tasks .review-student-block {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+/* زر الخروج كأيقونة في الهيدر */
+#parent-screen .icon-actions .icon-button {
+  font-size: 1.1rem;
+}
+
