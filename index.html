@@ -54,7 +54,7 @@
       border-color: #ffe0bf;
     }
 
-    /* صف النسبة + الشريط */
+    /* صف النسبة + الشريط (لو استُخدمت مستقبلاً) */
     .progress-card .progress-inline {
       display: flex;
       align-items: center;
@@ -92,6 +92,100 @@
     }
     .task-card .task-body.mission-text {
       margin: 0.25rem 0 0.5rem;
+    }
+
+    /* إخفاء تبويبات الطالب حالياً */
+    .student-tabs {
+      display: none;
+    }
+
+    /* 🔵 كروت الدوائر (الحفظ / المراجعة) */
+    .progress-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+    .circle-card {
+      flex: 1 1 220px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffff;
+      padding: 10px 12px;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+    .circle-wrapper {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+    }
+    .circle-progress {
+      --value: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(#22c55e calc(var(--value) * 1%), #e5e7eb 0);
+    }
+    #mur-circle {
+      background: conic-gradient(#f97316 calc(var(--value) * 1%), #e5e7eb 0);
+    }
+    .circle-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    .circle-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+    }
+    .circle-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    .circle-sub {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #6b7280;
+    }
+    .mini-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+    .mini-bar-fill {
+      height: 100%;
+      width: 0;
+      background: #3b82f6;
+      transition: width 0.25s ease-out;
+    }
+    #mur-circle-card .mini-bar-fill {
+      background: #f97316;
+    }
+
+    /* سطر "المهام الحالية" */
+    #student-main-tasks > h3 {
+      margin-top: 0;
     }
   </style>
 </head>
@@ -163,12 +257,11 @@
       </div>
     </header>
 
-    <!-- تبويبات الطالب: نخلي تبويب "مهامي الحالية" موجود للكود فقط ونخفيه شكلياً -->
+    <!-- تبويبات الطالب (مخفية حالياً) -->
     <nav class="student-tabs">
       <button
         class="student-tab-button"
         data-tab="student-main-tasks"
-        style="display: none"
       >
         مهامي الحالية
       </button>
@@ -180,47 +273,46 @@
       </button>
     </nav>
 
-  <!-- 🔵 بطاقات الدوائر (الحفظ / المراجعة) في أعلى صفحة الطالب -->
-  <section class="progress-section">
-    <!-- بطاقة الحفظ -->
-    <div class="circle-card" id="hifz-circle-card">
-      <div class="circle-wrapper">
-        <div class="circle-progress" id="hifz-circle"></div>
-        <div class="circle-center">
-          <span id="hifz-circle-percent">0%</span>
+    <!-- 🔵 بطاقات الدوائر (الحفظ / المراجعة) في أعلى صفحة الطالب -->
+    <section class="progress-section">
+      <!-- بطاقة الحفظ -->
+      <div class="circle-card" id="hifz-circle-card">
+        <div class="circle-wrapper">
+          <div class="circle-progress" id="hifz-circle"></div>
+          <div class="circle-center">
+            <span id="hifz-circle-percent">0%</span>
+          </div>
+        </div>
+        <div class="circle-info">
+          <div class="circle-title">الحفظ</div>
+          <div class="circle-sub">
+            <span id="hifz-circle-fraction">0 / 0</span>
+          </div>
+          <div class="mini-bar">
+            <div id="hifz-circle-mini-bar" class="mini-bar-fill"></div>
+          </div>
         </div>
       </div>
-      <div class="circle-info">
-        <div class="circle-title">الحفظ</div>
-        <div class="circle-sub">
-          <span id="hifz-circle-fraction">0 / 0</span>
-        </div>
-        <div class="mini-bar">
-          <div id="hifz-circle-mini-bar" class="mini-bar-fill"></div>
-        </div>
-      </div>
-    </div>
 
-    <!-- بطاقة المراجعة -->
-    <div class="circle-card" id="mur-circle-card">
-      <div class="circle-wrapper">
-        <div class="circle-progress" id="mur-circle"></div>
-        <div class="circle-center">
-          <span id="mur-circle-percent">0%</span>
+      <!-- بطاقة المراجعة -->
+      <div class="circle-card" id="mur-circle-card">
+        <div class="circle-wrapper">
+          <div class="circle-progress" id="mur-circle"></div>
+          <div class="circle-center">
+            <span id="mur-circle-percent">0%</span>
+          </div>
+        </div>
+        <div class="circle-info">
+          <div class="circle-title">المراجعة</div>
+          <div class="circle-sub">
+            <span id="mur-circle-fraction">0 / 0</span>
+          </div>
+          <div class="mini-bar">
+            <div id="mur-circle-mini-bar" class="mini-bar-fill"></div>
+          </div>
         </div>
       </div>
-      <div class="circle-info">
-        <div class="circle-title">المراجعة</div>
-        <div class="circle-sub">
-          <span id="mur-circle-fraction">0 / 0</span>
-        </div>
-        <div class="mini-bar">
-          <div id="mur-circle-mini-bar" class="mini-bar-fill"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
+    </section>
 
     <!-- تبويب: مهامي الحالية -->
     <section id="student-main-tasks" class="tasks-section">
@@ -230,7 +322,7 @@
       </div>
     </section>
 
-    <!-- تبويب: مهام المساعد -->
+    <!-- تبويب: مهام المساعد (لن تظهر للطالب حالياً لكن الكود جاهز) -->
     <section id="student-assistant-tab" class="tasks-section hidden">
       <h3>مهام المساعد</h3>
       <p class="info-text">
