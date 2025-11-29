@@ -1,7 +1,9 @@
 /* ========== أساسيات ========== */
 *,
 *::before,
-*::after { box-sizing: border-box; }
+*::after {
+  box-sizing: border-box;
+}
 
 body {
   font-family: "Cairo", sans-serif;
@@ -21,271 +23,574 @@ body {
   max-width: 1100px;
   padding: 25px 20px;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.07);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
 }
 
-h1, h2, h3, h4 { margin: 0 0 15px; color: #2c3e50; }
-h1 { text-align: center; margin-bottom: 10px; }
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 15px;
+  color: #2c3e50;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
 
-.subtitle { margin: 0; font-size: .9rem; color: #7f8c8d; }
-.hidden { display: none !important; }
+.subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+.hidden {
+  display: none !important;
+}
 
 /* ========== شريط الخطة (ملصقات) ========== */
-.plan-strip{
-  margin-top:-6px; margin-bottom:10px;
-  font-size:.9rem; color:#586a7a;
-  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+.plan-strip {
+  margin-top: -6px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #586a7a;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
 }
-.plan-strip .dot{opacity:.5;}
-.badge{
-  display:inline-flex; align-items:center; justify-content:center;
-  padding:.25rem .6rem; border-radius:999px; font-size:.9rem; line-height:1;
-  background:#f4f6f8; border:1px solid #e5e7eb;
+.plan-strip .dot {
+  opacity: 0.5;
 }
-.badge-plan{ background:#eef7ff; border-color:#d5e9ff; }
-.badge-points{ background:#f6ffed; border-color:#e2f7d3; }
-.badge-rank{ background:#fff3e6; border-color:#ffe0bf; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  line-height: 1;
+  background: #f4f6f8;
+  border: 1px solid #e5e7eb;
+}
+.badge-plan {
+  background: #eef7ff;
+  border-color: #d5e9ff;
+}
+.badge-points {
+  background: #f6ffed;
+  border-color: #e2f7d3;
+}
+.badge-rank {
+  background: #fff3e6;
+  border-color: #ffe0bf;
+}
 
 /* ========== رسائل ========== */
-.message{
-  margin-top:15px; padding:10px 12px; border-radius:8px;
-  font-size:.9rem; font-weight:600; text-align:center;
+.message {
+  margin-top: 15px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
 }
-.message.error{ background:#ffebee; color:#c62828; border:1px solid #ef5350; }
-.message.success{ background:#e8f5e9; color:#2e7d32; border:1px solid #66bb6a; }
-.message.info{ background:#e3f2fd; color:#1565c0; border:1px solid #64b5f6; }
+.message.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef5350;
+}
+.message.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #66bb6a;
+}
+.message.info {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #64b5f6;
+}
 
 /* ========== أزرار ========== */
-.button{
-  border:none; border-radius:10px; padding:10px 18px;
-  font-size:.95rem; font-weight:600; cursor:pointer;
-  display:inline-block; transition:all .2s ease;
+.button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-block;
+  transition: all 0.2s ease;
 }
-.button.primary{ background:#3498db; color:#fff; }
-.button.success{ background:#2ecc71; color:#fff; }
-.button.danger{ background:#e74c3c; color:#fff; }
-.button:hover{ transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.15); }
-.button:disabled{ background:#b0bec5; cursor:not-allowed; box-shadow:none; }
+.button.primary {
+  background: #3498db;
+  color: #fff;
+}
+.button.success {
+  background: #2ecc71;
+  color: #fff;
+}
+.button.danger {
+  background: #e74c3c;
+  color: #fff;
+}
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+.button:disabled {
+  background: #b0bec5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 
-.button.secondary{
-  background:#95a5a6;
-  color:#fff;
+.button.secondary {
+  background: #95a5a6;
+  color: #fff;
 }
-.delegated-info{
-  font-size:.8rem;
-  color:#8e44ad;
-  margin-top:3px;
+.delegated-info {
+  font-size: 0.8rem;
+  color: #8e44ad;
+  margin-top: 3px;
 }
 
 /* ========== إدخال ========== */
-.input-group{ margin-bottom:15px; }
-.input-group label{ display:block; margin-bottom:5px; font-size:.9rem; font-weight:600; }
-.input-group input, .input-group select{
-  width:100%; padding:9px 10px; border-radius:8px; border:1px solid #d0d7de; font-size:.9rem;
+.input-group {
+  margin-bottom: 15px;
 }
-.input-group input:focus, .input-group select:focus{
-  outline:none; border-color:#3498db; box-shadow:0 0 0 2px rgba(52,152,219,.25);
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
-.info-text{ font-size:.85rem; color:#7f8c8d; margin-top:5px; }
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid #d0d7de;
+  font-size: 0.9rem;
+}
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+}
+.info-text {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
 
 /* ========== رأس اللوحة ========== */
-.dashboard-header{
-  display:flex; flex-direction:column; gap:10px;
-  margin-bottom:20px; border-bottom:1px solid #ecf0f1; padding-bottom:12px;
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 12px;
 }
-.header-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
 /* ========== التقدم (بطاقتان فقط) ========== */
-.progress-section{
-  display:grid; grid-template-columns:1fr; gap:12px; margin-bottom:12px;
+.progress-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
 }
-.progress-card{
-  background:#f9fbff; padding:10px 12px; border-radius:12px;
-  box-shadow:0 1px 4px rgba(0,0,0,.04);
+.progress-card {
+  background: #f9fbff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
-.progress-card.hifz{ border-right:4px solid #2ecc71; }
-.progress-card.murajaa{ border-right:4px solid #ffb74d; }
+.progress-card.hifz {
+  border-right: 4px solid #2ecc71;
+}
+.progress-card.murajaa {
+  border-right: 4px solid #ffb74d;
+}
 
 /* صف واحد: الشريط + النسبة */
-.progress-inline{ display:flex; align-items:center; gap:.75rem; margin-top:.25rem; }
-.progress-bar{
-  flex:1; height:8px; background:#e0e6ed; border-radius:999px; overflow:hidden;
+.progress-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
 }
-.progress-fill{
-  height:100%; width:0; background:linear-gradient(90deg,#3498db,#2ecc71);
-  transition:width .4s ease;
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e0e6ed;
+  border-radius: 999px;
+  overflow: hidden;
 }
-.progress-percent{ margin:0; font-size:.85rem; font-weight:700; min-width:3ch; }
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  transition: width 0.4s ease;
+}
+.progress-percent {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-width: 3ch;
+}
 
 /* النص تحت الشريط */
-.small-text{ font-size:.8rem; color:#7f8c8d; }
-.next-mission{ margin:.4rem 0 0; font-size:.85rem; color:#2c3e50; font-weight:700; }
+.small-text {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+}
+.next-mission {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
 
 /* ========== مهامي (طالب) ========== */
-.tasks-section h3{ margin-bottom:10px; }
-.tasks-list{ margin-top:10px; }
-
-.task-card{
-  background:#fff; border-radius:12px; border:1px solid #e0e6ed;
-  padding:8px 10px; margin-bottom:8px; box-shadow:0 1px 6px rgba(0,0,0,.04);
+.tasks-section h3 {
+  margin-bottom: 10px;
 }
-.task-header{ display:flex; justify-content:space-between; align-items:center; gap:6px; }
-.task-title{ font-weight:700; font-size:.85rem; }
-
-.task-type-tag{
-  font-size:.8rem; padding:3px 8px; border-radius:999px; background:#ecf0f1;
-}
-.task-type-tag.hifz{ background:#e8f5e9; color:#2e7d32; }
-.task-type-tag.murajaa{ background:#fff3e0; color:#ef6c00; }
-.task-type-tag.general{ background:#e3f2fd; color:#1565c0; }
-
-.task-body{ margin-top:6px; font-size:.9rem; }
-.task-body.mission-text{
-  font-size:1.2rem; font-weight:700; line-height:1.8; color:#2c3e50;
+.tasks-list {
+  margin-top: 10px;
 }
 
-.task-footer{
-  margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+.task-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e0e6ed;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
 }
-.task-points-tag{
-  font-size:.8rem; padding:3px 8px; border-radius:999px; background:#f0f4f8;
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
 }
-.task-status-text{ font-size:.8rem; font-weight:600; }
+.task-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.task-type-tag {
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ecf0f1;
+}
+.task-type-tag.hifz {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.task-type-tag.murajaa {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+.task-type-tag.general {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.task-body {
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+.task-body.mission-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.8;
+  color: #2c3e50;
+}
+
+.task-footer {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.task-points-tag {
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f0f4f8;
+}
+.task-status-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
 
 /* ========== تبويبات المعلم ========== */
-.tabs{ display:flex; flex-direction:column; gap:6px; margin-bottom:15px; }
-.tab-button{
-  border:none; border-radius:10px; padding:8px 10px; font-size:.9rem; font-weight:600;
-  background:#ecf5ff; color:#34495e; cursor:pointer; text-align:center;
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
 }
-.tab-button.active{ background:#3498db; color:#fff; }
-.tab-content-container{ margin-top:5px; }
-.tab-content.hidden{ display:none; }
+.tab-button {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #ecf5ff;
+  color: #34495e;
+  cursor: pointer;
+  text-align: center;
+}
+.tab-button.active {
+  background: #3498db;
+  color: #fff;
+}
+.tab-content-container {
+  margin-top: 5px;
+}
+.tab-content.hidden {
+  display: none;
+}
 
 /* قائمة الطلاب */
-.data-list{ list-style:none; padding:0; margin:0; }
-.data-list li{
-  background:#f9fbff; border-radius:10px; border-right:4px solid #3498db;
-  padding:10px; margin-bottom:10px;
+.data-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
-.student-line{ display:flex; flex-direction:column; gap:6px; }
-.student-main{ font-size:.95rem; font-weight:700; }
-.student-sub{ font-size:.8rem; color:#7f8c8d; }
-.student-actions{ margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
+.data-list li {
+  background: #f9fbff;
+  border-radius: 10px;
+  border-right: 4px solid #3498db;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.student-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.student-main {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.student-sub {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+}
+.student-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
 /* مراجعة المهام */
-.tasks-review-container{ margin-top:10px; }
-.review-student-block{
-  background:#fff; border-radius:10px; border:1px solid #e0e6ed; padding:8px; margin-bottom:8px;
+.tasks-review-container {
+  margin-top: 10px;
 }
-.review-student-title{ font-weight:700; margin-bottom:6px; font-size:.9rem; }
-.review-task-item{
-  background:#fff8e1; border-radius:8px; border-right:3px solid #ffb300;
-  padding:6px 7px; margin-bottom:6px;
+.review-student-block {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e0e6ed;
+  padding: 8px;
+  margin-bottom: 8px;
 }
-.review-task-header{
-  display:flex; justify-content:space-between; gap:8px; font-size:.8rem; font-weight:600;
+.review-student-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
 }
-.review-task-body{ font-size:.8rem; margin-top:3px; }
-.review-task-footer{ margin-top:4px; display:flex; flex-wrap:wrap; gap:6px; }
+.review-task-item {
+  background: #fff8e1;
+  border-radius: 8px;
+  border-right: 3px solid #ffb300;
+  padding: 6px 7px;
+  margin-bottom: 6px;
+}
+.review-task-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.review-task-body {
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+.review-task-footer {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
 /* لوحة الشرف */
-.honor-list{ list-style:none; margin:8px 0 0; padding:0; }
-.honor-item{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:6px 10px; margin-bottom:6px; border-radius:10px;
-  background:#f9fbff; border-right:4px solid #95a5a6; font-size:.85rem;
+.honor-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
 }
-.honor-item.rank-1{ border-right-color:#f1c40f; background:#fff9e0; }
-.honor-item.rank-2{ border-right-color:#bdc3c7; background:#f7f9fb; }
-.honor-item.rank-3{ border-right-color:#e67e22; background:#fff3e6; }
+.honor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: #f9fbff;
+  border-right: 4px solid #95a5a6;
+  font-size: 0.85rem;
+}
+.honor-item.rank-1 {
+  border-right-color: #f1c40f;
+  background: #fff9e0;
+}
+.honor-item.rank-2 {
+  border-right-color: #bdc3c7;
+  background: #f7f9fb;
+}
+.honor-item.rank-3 {
+  border-right-color: #e67e22;
+  background: #fff3e6;
+}
 
 /* ========== عرض المنهج ========== */
-.curriculum-view{ display:grid; grid-template-columns:1fr; gap:10px; }
-.curriculum-list{
-  max-height:350px; overflow-y:auto; border-radius:10px;
-  border:1px solid #ecf0f1; padding:8px; font-size:.85rem;
+.curriculum-view {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
-.curriculum-item{ padding:4px 0; border-bottom:1px dashed #e0e6ed; }
-.curriculum-item:last-child{ border-bottom:none; }
+.curriculum-list {
+  max-height: 350px;
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid #ecf0f1;
+  padding: 8px;
+  font-size: 0.85rem;
+}
+.curriculum-item {
+  padding: 4px 0;
+  border-bottom: 1px dashed #e0e6ed;
+}
+.curriculum-item:last-child {
+  border-bottom: none;
+}
 
 /* ========== ولي الأمر ========== */
-.children-list{ margin-top:10px; }
-.child-card{
-  background:#fff; border-radius:12px; border:1px solid #e0e6ed;
-  padding:12px; margin-bottom:10px;
+.children-list {
+  margin-top: 10px;
 }
-.child-name{ font-weight:700; margin-bottom:5px; }
-.child-line{ font-size:.85rem; margin:2px 0; }
-.child-card .progress-bar{ margin:6px 0 4px; }
+.child-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e0e6ed;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.child-name {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.child-line {
+  font-size: 0.85rem;
+  margin: 2px 0;
+}
+.child-card .progress-bar {
+  margin: 6px 0 4px;
+}
 
 /* ========== شاشات كبيرة ========== */
-@media (min-width: 768px){
-  .container{ padding:30px; }
-  .dashboard-header{ flex-direction:row; justify-content:space-between; align-items:center; }
-  .tabs{ flex-direction:row; }
-  .tab-button{ flex:1; }
-  .progress-section{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-  .curriculum-view{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+@media (min-width: 768px) {
+  .container {
+    padding: 30px;
+  }
+  .dashboard-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .tabs {
+    flex-direction: row;
+  }
+  .tab-button {
+    flex: 1;
+  }
+  .progress-section {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .curriculum-view {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* اختيار الحلقة (حضوري / إلكتروني) */
-.halaqa-toggle{
-  margin-top:8px;
-  display:flex;
-  gap:6px;
+.halaqa-toggle {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
 }
 
-.halaqa-btn{
-  border:none;
-  border-radius:999px;
-  padding:5px 12px;
-  font-size:.8rem;
-  font-weight:600;
-  background:#ecf5ff;
-  color:#34495e;
-  cursor:pointer;
-  transition:all .2s ease;
+.halaqa-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #ecf5ff;
+  color: #34495e;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.halaqa-btn.active{
-  background:#3498db;
-  color:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.12);
+.halaqa-btn.active {
+  background: #3498db;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* ========== شبكة طلاب الحلقة ========== */
-.halaqa-grid{
-  display:grid;
+.halaqa-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap:10px;
-  margin-top:10px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-.halaqa-tile{
-  background:#fff;
-  border-radius:12px;
-  border:1px solid #e0e6ed;
-  padding:10px;
-  box-shadow:0 1px 4px rgba(0,0,0,.04);
-  cursor:pointer;
-  transition:transform .15s ease, box-shadow .15s ease;
-  font-size:.9rem;
-  text-align:center;
+.halaqa-tile {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e0e6ed;
+  padding: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
-.halaqa-tile:hover{
-  transform:translateY(-2px);
-  box-shadow:0 3px 10px rgba(0,0,0,.08);
+.halaqa-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
-.halaqa-tile-code{
-  font-weight:700;
-  margin-bottom:4px;
+.halaqa-tile-code {
+  font-weight: 700;
+  margin-bottom: 4px;
   font-size: 1.4rem;
 }
-.halaqa-tile-line{
-  font-size:.8rem;
-  color:#555;
+.halaqa-tile-line {
+  font-size: 0.8rem;
+  color: #555;
 }
 
 /* نص خافت للملاحظات الصغيرة */
@@ -298,7 +603,7 @@ h1 { text-align: center; margin-bottom: 10px; }
   padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid #d0d7de;
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
 /* إخفاء عنواني مهمة الحفظ/المراجعة في كروت التقدم */
@@ -313,236 +618,10 @@ h1 { text-align: center; margin-bottom: 10px; }
 
 /* خلفية صفحة الطالب */
 #student-screen {
-  background: #F4F9FF;  /* سماوي باهت جداً */
+  background: #f4f9ff; /* سماوي باهت جداً */
   padding-bottom: 40px;
 }
 
 /* الهيدر */
 #student-screen .dashboard-header {
-  background: #DDEBFF; /* سماوي باهت */
-  padding: 18px;
-  border-radius: 0 0 18px 18px;
-  color: #2C3E50;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-}
-
-#student-screen .dashboard-header h2 {
-  color: #1C2C3A;
-  font-weight: 700;
-}
-
-#student-screen .dashboard-header p {
-  color: #4F6A85;
-  font-weight: 600;
-}
-
-/* شريط الخطة */
-#student-plan-strip {
-  background: #E8F2FF;
-  color: #45627A;
-  padding: 8px 12px;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-}
-
-/* بطاقات التقدم */
-#student-screen .progress-card {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid #E1EAF5;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-/* عنوان البطاقة */
-#student-screen .progress-card h3 {
-  color: #2C4F70;
-  font-size: 17px;
-  font-weight: 700;
-}
-
-/* النصوص داخل البطاقة */
-#student-screen .progress-card p {
-  color: #486078;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* شريط التقدم */
-#student-screen .progress-bar {
-  background: #E4EEFA;
-  height: 10px;
-  border-radius: 8px;
-}
-
-#student-screen .progress-fill {
-  background: #6AA9E9 !important; /* سماوي متوسط */
-}
-
-/* عناوين الأقسام داخل صفحة الطالب */
-#student-screen h3 {
-  color: #32567A;
-  font-size: 19px;
-  margin-bottom: 10px;
-}
-
-/* بطاقات المهام في صفحة الطالب */
-#student-screen .task-card {
-  background: #FFFFFF;
-  border-radius: 14px;
-  padding: 14px;
-  border: 1px solid #E3E9F1;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  margin-bottom: 12px;
-}
-
-/* نص المهمة في صفحة الطالب */
-#student-screen .task-body {
-  color: #3F5570;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-/* زر الإنجاز في صفحة الطالب */
-#student-screen .button.primary {
-  background: #6AA9E9;
-  color: #fff;
-  border-radius: 12px;
-  padding: 8px 14px;
-  font-weight: 700;
-}
-
-#student-screen .button.primary:hover {
-  background: #5895CF;
-}
-
-/* زر الخروج في صفحة الطالب */
-#student-screen .button.danger {
-  background: #FF6F7A;
-  border-radius: 12px;
-}
-
-#student-screen .button.danger:hover {
-  background: #E35762;
-}
-
-/* رسالة لا توجد مهام */
-#student-screen .message.info {
-  background: #DDEBFF;
-  color: #345574;
-  border-radius: 12px;
-}
-
-/* مشغل الصوت */
-#student-screen audio {
-  width: 100%;
-  margin-top: 10px;
-  background: #F0F5FB;
-  border-radius: 10px;
-  padding: 5px;
-}
-
-/* 1) توزيع بطاقات التقدم في صفين للطالب (شكل لوحة واضحة) */
-#student-screen .progress-section{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 10px;
-}
-
-/* على الجوال ترجع عمود واحد */
-@media (max-width: 600px){
-  #student-screen .progress-section{
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 2) جعل مهمة الحفظ/المراجعة بارزة في وسط البطاقة */
-#student-screen .progress-card .next-mission{
-  margin-top: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #F4F9FF;
-  text-align: center;
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-/* 3) إبراز كارت المهمة الحالية وجعلها أكبر قليلاً */
-#student-screen .tasks-list .task-card:first-child{
-  border-right-width: 6px;
-  transform: translateY(-2px);
-}
-
-#student-screen .tasks-list .task-card:first-child .task-title{
-  font-size: 1rem;
-}
-
-/* جعل أول بطاقة (أعلى مهمة) أوضح قليلاً */
-#student-screen .tasks-list .task-card:first-child{
-  border-right-width: 6px;
-  border-right-color: #6AA9E9;
-  transform: translateY(-2px);
-}
-
-/* عنوان المهمة */
-#student-screen .task-title{
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-/* فقاعة نص المهمة في وسط الكرت */
-#student-screen .task-body.mission-text{
-  text-align: center;
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: #F0F5FB;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-/* 4) جعل نص المهمة في وسط الكارت كفقاعة واضحة */
-#student-screen .task-body.mission-text{
-  text-align: center;
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: #F0F5FB;
-  font-size: 1.1rem;
-}
-
-/* 5) شريط علوي صغير فوق قائمة المهام (عنوان بصري للقسم) */
-#student-screen .tasks-section{
-  margin-top: 18px;
-  padding-top: 10px;
-  border-top: 2px dashed #E1EAF5;
-}
-
-#student-screen .tasks-section h3{
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #E8F2FF;
-  font-size: 0.95rem;
-  margin-bottom: 6px;
-}
-
-/* 6) تباعد أوضح داخل كرت المهمة بين السطر العلوي والزر */
-#student-screen .task-header{
-  margin-bottom: 6px;
-}
-/* توسيط زر إنجاز المهمة داخل كرت المهمة (صفحة الطالب فقط) */
-#student-screen .task-footer {
-  width: 100%;
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;   /* توسيط أفقي فعلي */
-  align-items: center;
-  gap: 8px;
-}
-
-#student-screen .task-footer .button.primary {
-  min-width: 180px;          /* يخليه واضح وكبير */
-  text-align: center;
-}
+  background: #dde
