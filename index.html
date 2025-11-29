@@ -248,12 +248,12 @@
         </p>
       </div>
       <div class="icon-actions">
-  <button id="refresh-student-button" class="icon-button">↻</button>
-  <button id="logout-button-student" class="icon-button">⏻</button>
-</div>
+        <button id="refresh-student-button" class="icon-button">↻</button>
+        <button id="logout-button-student" class="icon-button">⏻</button>
+      </div>
     </header>
 
-    <!-- تبويبات الطالب (مخفية حالياً) -->
+    <!-- تبويبات الطالب (مخفية حالياً لكن موجودة للكود) -->
     <nav class="student-tabs">
       <button
         class="student-tab-button"
@@ -269,7 +269,7 @@
       </button>
     </nav>
 
-    <!-- 🔵 بطاقات الدوائر (الحفظ / المراجعة) في أعلى صفحة الطالب -->
+    <!-- 🔵 بطاقات الدوائر (الحفظ / المراجعة) -->
     <section class="progress-section">
       <!-- بطاقة الحفظ -->
       <div class="circle-card" id="hifz-circle-card">
@@ -318,7 +318,7 @@
       </div>
     </section>
 
-    <!-- تبويب: مهام المساعد (لن تظهر للطالب حالياً لكن الكود جاهز) -->
+    <!-- تبويب: مهام المساعد (لن تظهر حالياً) -->
     <section id="student-assistant-tab" class="tasks-section hidden">
       <h3>مهام المساعد</h3>
       <p class="info-text">
@@ -337,14 +337,9 @@
         <h2>لوحة تحكم المعلم</h2>
         <p class="subtitle">إدارة مهام الطلاب وخططهم</p>
       </div>
-
-      <div class="header-actions">
-        <button id="refresh-teacher-button" class="button primary">
-          تحديث البيانات 🔄
-        </button>
-        <button id="logout-button-teacher" class="button danger">
-          تسجيل الخروج
-        </button>
+      <div class="icon-actions">
+        <button id="refresh-teacher-button" class="icon-button">↻</button>
+        <button id="logout-button-teacher" class="icon-button">⏻</button>
       </div>
     </header>
 
@@ -462,9 +457,7 @@
           </div>
 
           <div class="input-group">
-            <label for="new-student-parent-name"
-              >اسم ولي الأمر (اختياري):</label
-            >
+            <label for="new-student-parent-name">اسم ولي الأمر (اختياري):</label>
             <input
               type="text"
               id="new-student-parent-name"
@@ -473,9 +466,7 @@
           </div>
 
           <div class="input-group">
-            <label for="new-student-parent-code"
-              >رمز ولي الأمر (اختياري):</label
-            >
+            <label for="new-student-parent-code">رمز ولي الأمر (اختياري):</label>
             <input
               type="text"
               id="new-student-parent-code"
@@ -484,9 +475,7 @@
           </div>
 
           <div class="input-group">
-            <label for="new-student-hifz-start"
-              >نقطة بداية الحفظ:</label
-            >
+            <label for="new-student-hifz-start">نقطة بداية الحفظ:</label>
             <select id="new-student-hifz-start"></select>
           </div>
 
@@ -496,9 +485,7 @@
           </div>
 
           <div class="input-group">
-            <label for="new-student-hifz-level"
-              >مستوى الحفظ (عدد المقاطع):</label
-            >
+            <label for="new-student-hifz-level">مستوى الحفظ (عدد المقاطع):</label>
             <select id="new-student-hifz-level">
               <option value="1">مقطع واحد (1x)</option>
               <option value="2">مقطعين (2x)</option>
@@ -507,9 +494,7 @@
           </div>
 
           <div class="input-group">
-            <label for="new-student-murajaa-level"
-              >مستوى المراجعة (الحلقة):</label
-            >
+            <label for="new-student-murajaa-level">مستوى المراجعة (الحلقة):</label>
             <select id="new-student-murajaa-level">
               <option value="BUILDING">البناء</option>
               <option value="DEVELOPMENT">التطوير</option>
@@ -518,9 +503,7 @@
           </div>
 
           <div class="input-group">
-            <label for="new-student-murajaa-start"
-              >نقطة بداية المراجعة:</label
-            >
+            <label for="new-student-murajaa-start">نقطة بداية المراجعة:</label>
             <select id="new-student-murajaa-start"></select>
             <p class="info-text">
               هذه أول مهمة مراجعة يبدأ منها الطالب في دورته الحالية.
@@ -541,10 +524,7 @@
           >
             حفظ بيانات الطالب
           </button>
-          <p
-            id="register-student-message"
-            class="message hidden"
-          ></p>
+          <p id="register-student-message" class="message hidden"></p>
         </div>
 
         <hr />
@@ -559,17 +539,11 @@
         <div class="curriculum-view">
           <div>
             <h4>منهج الحفظ</h4>
-            <div
-              id="hifz-curriculum-display"
-              class="curriculum-list"
-            ></div>
+            <div id="hifz-curriculum-display" class="curriculum-list"></div>
           </div>
           <div>
             <h4>منهج المراجعة</h4>
-            <div
-              id="murajaa-curriculum-display"
-              class="curriculum-list"
-            ></div>
+            <div id="murajaa-curriculum-display" class="curriculum-list"></div>
           </div>
         </div>
 
@@ -592,9 +566,9 @@
           متابعة إنجاز الأبناء في الحفظ والمراجعة
         </p>
       </div>
-      <button id="logout-button-parent" class="button danger">
-        تسجيل الخروج
-      </button>
+      <div class="icon-actions">
+        <button id="logout-button-parent" class="icon-button">⏻</button>
+      </div>
     </header>
 
     <section>
@@ -608,13 +582,9 @@
     <section>
       <h3>مهام المساعد لولي الأمر</h3>
       <p class="info-text">
-        إذا كنت ولي أمر مساعدًا، ستظهر هنا المهام التي وجّهها المعلم لك
-        لمراجعتها.
+        إذا كنت ولي أمر مساعدًا، ستظهر هنا المهام التي وجّهها المعلم لك لمراجعتها.
       </p>
-      <div
-        id="parent-assistant-tasks"
-        class="tasks-review-container"
-      >
+      <div id="parent-assistant-tasks" class="tasks-review-container">
         <!-- يتم ملؤها من app.js -->
       </div>
     </section>
@@ -636,10 +606,7 @@
 
     <section>
       <h3>طلاب هذه الحلقة</h3>
-      <div
-        id="halaqa-students-grid"
-        class="halaqa-grid"
-      >
+      <div id="halaqa-students-grid" class="halaqa-grid">
         <!-- يتم ملؤها من app.js -->
       </div>
     </section>
