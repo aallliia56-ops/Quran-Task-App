@@ -487,6 +487,45 @@ function computeMurajaaPercent(student) {
   const dist = (prog - start + len) % len;
   return Math.round((dist / len) * 100);
 }
+function updateStudentCircles(student, hifzPct, murPct) {
+  // عناصر الحفظ
+  const hCircle = document.getElementById("hifz-circle");
+  const hPctEl = document.getElementById("hifz-circle-percent");
+  const hFracEl = document.getElementById("hifz-circle-fraction");
+  const hMini = document.getElementById("hifz-circle-mini-bar");
+
+  // عناصر المراجعة
+  const mCircle = document.getElementById("mur-circle");
+  const mPctEl = document.getElementById("mur-circle-percent");
+  const mFracEl = document.getElementById("mur-circle-fraction");
+  const mMini = document.getElementById("mur-circle-mini-bar");
+
+  // الحفظ: done / total
+  const startH = student.hifz_start_id ?? 0;
+  const endH = student.hifz_end_id ?? (HIFZ_CURRICULUM.length - 1);
+  const spanH = Math.max(1, endH - startH + 1);
+  const progH = student.hifz_progress ?? startH;
+  const doneH = Math.max(0, Math.min(progH - startH, spanH));
+
+  if (hCircle) hCircle.style.setProperty("--value", hifzPct);
+  if (hPctEl) hPctEl.textContent = `${hifzPct}%`;
+  if (hFracEl) hFracEl.textContent = `${doneH} / ${spanH}`;
+  if (hMini) hMini.style.width = `${hifzPct}%`;
+
+  // المراجعة: done / total
+  const level = student.murajaa_level || "BUILDING";
+  const arr = getReviewArrayForLevel(level);
+  const len = arr.length || 1;
+  const startM = ((student.murajaa_start_index ?? 0) % len + len) % len;
+  let progM = student.murajaa_progress_index ?? startM;
+  progM = ((progM % len) + len) % len;
+  const doneM = (progM - startM + len) % len;
+
+  if (mCircle) mCircle.style.setProperty("--value", murPct);
+  if (mPctEl) mPctEl.textContent = `${murPct}%`;
+  if (mFracEl) mFracEl.textContent = `${doneM} / ${len}`;
+  if (mMini) mMini.style.width = `${murPct}%`;
+}
 
 /** تحميل مهام المساعد لأي مستخدم حالي (طالب أو ولي أمر) */
 async function loadAssistantTasksForCurrentUser() {
@@ -627,6 +666,7 @@ async function displayStudentDashboard(student) {
       els.murLabel,
       murMission ? murMission.description : "لا توجد مهمة مراجعة حالياً."
     );
+    updateStudentCircles(student, hifzPct, murPct);
 
     if (els.murLevel) {
       safeSetText(
