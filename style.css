@@ -625,3 +625,112 @@ h1 {
 /* الهيدر */
 #student-screen .dashboard-header {
   background: #dde
+/* 🔵 بطاقات الدوائر أعلى صفحة الطالب */
+
+#student-screen .progress-section {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 10px 0 14px;
+}
+
+@media (max-width: 600px) {
+  #student-screen .progress-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* شكل الكرت */
+.circle-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #E1EAF5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* حاوية الدائرة */
+.circle-wrapper {
+  width: 64px;
+  height: 64px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* الدائرة نفسها باستخدام conic-gradient */
+.circle-progress {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    conic-gradient(#6AA9E9 calc(var(--value, 0) * 1%), #E5ECF5 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* فراغ أبيض في الوسط (دونات) */
+.circle-progress::after {
+  content: "";
+  width: 74%;
+  height: 74%;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* الرقم في الوسط */
+.circle-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2C3E50;
+}
+
+/* معلومات على يمين الدائرة */
+.circle-info {
+  flex: 1;
+}
+
+.circle-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+  color: #32567A;
+}
+
+.circle-sub {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-bottom: 4px;
+}
+
+/* الشريط الصغير أسفل النص */
+.mini-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #ECF0F1;
+  overflow: hidden;
+}
+
+.mini-bar-fill {
+  height: 100%;
+  width: 0;
+  background: #6AA9E9;
+}
+
+/* لون دائرة المراجعة برتقالي */
+#mur-circle-card .circle-progress {
+  background:
+    conic-gradient(#F5A623 calc(var(--value, 0) * 1%), #F3E7D9 0);
+}
+#mur-circle-card .mini-bar-fill {
+  background: #F5A623;
+}
