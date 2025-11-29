@@ -970,3 +970,23 @@ body {
 .task-card .task-footer button {
   order: 2 !important;
 }
+/* جعل بطاقة المهمة ذات وضع نسبي لتثبيت العناصر داخلها */
+.task-card {
+  position: relative !important;
+}
+
+/* النقاط في الزاوية السفلية اليمنى تماماً */
+.task-card .task-points-tag {
+  position: absolute !important;
+  bottom: 10px !important;
+  right: 12px !important;
+
+  margin: 0 !important;
+  z-index: 5;
+}
+
+/* زر إنجاز المهمة يبقى في المنتصف كما هو */
+.task-card .task-footer button {
+  position: relative !important;
+  z-index: 4;
+}
