@@ -269,7 +269,8 @@ function updatePlanStrip({
   if (studentPlanLine) {
     studentPlanLine.textContent = `الخطة: من ${startSurah} إلى ${endSurah} • النقاط: ${points} • الترتيب: ${rank}`;
   }
-  safeSetText(stripPlan, `الخطة: من ${startSurah} إلى ${endSurah}`);
+  // النص داخل الملصق: فقط من … إلى …
+  safeSetText(stripPlan, `من ${startSurah} إلى ${endSurah}`);
   safeSetText(stripPoints, `النقاط: ${points}`);
   safeSetText(stripRank, `الترتيب: ${rank}`);
 }
@@ -574,7 +575,7 @@ async function displayStudentDashboard(student) {
 
     const els = getStudentEls();
 
-    safeSetText(els.welcome, `أهلاً بك يا ${student.name || "طالب"}`);
+    safeSetText(els.welcome, student.name || "طالب");
 
     const startIdx = student.hifz_start_id ?? 0;
     const endIdx = student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1;
