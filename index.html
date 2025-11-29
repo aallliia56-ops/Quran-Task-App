@@ -180,66 +180,47 @@
       </button>
     </nav>
 
-    <!-- كروت التقدم -->
-    <section class="progress-section">
-      <!-- بطاقة الحفظ -->
-      <div class="progress-card hifz">
-        <h3>تقدم الحفظ</h3>
-
-        <p id="student-hifz-progress-label" class="small-text">
-          المهمة الحالية: —
-        </p>
-
-        <div class="progress-inline">
-          <div class="progress-bar">
-            <div
-              id="student-hifz-progress-bar"
-              class="progress-fill"
-            ></div>
-          </div>
-          <p class="progress-percent">
-            <span id="student-hifz-progress-percent">0</span>%
-          </p>
+  <!-- 🔵 بطاقات الدوائر (الحفظ / المراجعة) في أعلى صفحة الطالب -->
+  <section class="progress-section">
+    <!-- بطاقة الحفظ -->
+    <div class="circle-card" id="hifz-circle-card">
+      <div class="circle-wrapper">
+        <div class="circle-progress" id="hifz-circle"></div>
+        <div class="circle-center">
+          <span id="hifz-circle-percent">0%</span>
         </div>
-
-        <p
-          id="student-hifz-next-label"
-          class="small-text muted"
-          style="margin: 0.4rem 0 0"
-        >
-          المهمة القادمة: —
-        </p>
       </div>
-
-      <!-- بطاقة المراجعة -->
-      <div class="progress-card murajaa">
-        <h3>تقدم المراجعة</h3>
-
-        <p id="student-murajaa-progress-label" class="small-text">
-          المهمة الحالية: —
-        </p>
-
-        <div class="progress-inline">
-          <div class="progress-bar">
-            <div
-              id="student-murajaa-progress-bar"
-              class="progress-fill"
-            ></div>
-          </div>
-          <p class="progress-percent">
-            <span id="student-murajaa-progress-percent">0</span>%
-          </p>
+      <div class="circle-info">
+        <div class="circle-title">الحفظ</div>
+        <div class="circle-sub">
+          <span id="hifz-circle-fraction">0 / 0</span>
         </div>
-
-        <p
-          id="student-murajaa-next-label"
-          class="small-text muted"
-          style="margin: 0.4rem 0 0"
-        >
-          المهمة القادمة: —
-        </p>
+        <div class="mini-bar">
+          <div id="hifz-circle-mini-bar" class="mini-bar-fill"></div>
+        </div>
       </div>
-    </section>
+    </div>
+
+    <!-- بطاقة المراجعة -->
+    <div class="circle-card" id="mur-circle-card">
+      <div class="circle-wrapper">
+        <div class="circle-progress" id="mur-circle"></div>
+        <div class="circle-center">
+          <span id="mur-circle-percent">0%</span>
+        </div>
+      </div>
+      <div class="circle-info">
+        <div class="circle-title">المراجعة</div>
+        <div class="circle-sub">
+          <span id="mur-circle-fraction">0 / 0</span>
+        </div>
+        <div class="mini-bar">
+          <div id="mur-circle-mini-bar" class="mini-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 
     <!-- تبويب: مهامي الحالية -->
     <section id="student-main-tasks" class="tasks-section">
