@@ -571,24 +571,28 @@
       </div>
     </header>
 
-    <section>
-      <h3>أبناؤك المسجلون</h3>
-      <div id="parent-children-list" class="children-list">
-        <p class="message info">جارٍ تحميل بيانات الأبناء...</p>
-      </div>
-    </section>
+    <div class="parent-layout">
+      <!-- عمود الأبناء -->
+      <section class="parent-column main">
+        <h3 class="section-title">أبناؤك المسجلون</h3>
+        <div id="parent-children-list" class="children-list">
+          <p class="message info">جارٍ تحميل بيانات الأبناء...</p>
+        </div>
+      </section>
 
-    <!-- مهام المساعد لولي الأمر -->
-    <section>
-      <h3>مهام المساعد لولي الأمر</h3>
-      <p class="info-text">
-        إذا كنت ولي أمر مساعدًا، ستظهر هنا المهام التي وجّهها المعلم لك لمراجعتها.
-      </p>
-      <div id="parent-assistant-tasks" class="tasks-review-container">
-        <!-- يتم ملؤها من app.js -->
-      </div>
-    </section>
+      <!-- عمود مهام المساعد -->
+      <section class="parent-column side">
+        <h3 class="section-title">مهام المساعد لولي الأمر</h3>
+        <p class="info-text">
+          إذا كنت ولي أمر مساعدًا، ستظهر هنا المهام التي وجّهها المعلم لك لمراجعتها.
+        </p>
+        <div id="parent-assistant-tasks" class="tasks-review-container">
+          <!-- يتم ملؤها من app.js -->
+        </div>
+      </section>
+    </div>
   </div>
+
 
   <!-- شاشة كود الحلقة (شبكة الطلاب) -->
   <div id="halaqa-screen" class="container hidden">
