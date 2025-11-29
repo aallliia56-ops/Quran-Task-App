@@ -895,3 +895,35 @@ body {
   margin-top: 4px;
 }
 
+
+/* الكرت نفسه */
+.task-card {
+  position: relative;
+}
+
+/* كلمة حفظ / مراجعة / عامة أعلى يسار البطاقة */
+.task-card .task-type-tag {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+}
+
+/* نخلي العنوان في النص */
+.task-card .task-header {
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ترتيب منطقة الفوتر */
+.task-card .task-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 12px;
+}
+
+/* النقاط أسفل يمين البطاقة (فوق الزر مباشرة) */
+.task-card .task-points-tag {
+  align-self: flex-end;
+  margin-bottom: 8px;
+}
