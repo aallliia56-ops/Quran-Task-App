@@ -72,13 +72,13 @@ const parentAssistantTasksList = $("#parent-assistant-tasks");
 const studentMainTasksSection = $("#student-main-tasks");
 const studentAssistantTabSection = $("#student-assistant-tab");
 const studentTabButtons = document.querySelectorAll(".student-tab-button");
+
 // إخفاء تبويب مهام المساعد في صفحة الطالب نهائياً
 if (studentAssistantTabSection) {
   studentAssistantTabSection.classList.add("hidden");
 }
 // ما فيه تبويبات للطالب – دائماً "مهامي"
 studentTabButtons.forEach((btn) => btn.classList.add("hidden"));
-
 
 function activateStudentTab() {
   // دائماً نظهر صفحة المهام فقط
@@ -90,10 +90,7 @@ function activateStudentTab() {
   if (progressSection) progressSection.classList.remove("hidden");
 }
 
-
-
-
-// ربط أزرار تبويبات الطالب
+// ربط أزرار تبويبات الطالب (مع أنها حالياً مخفية)
 studentTabButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     activateStudentTab(btn.dataset.tab);
@@ -195,7 +192,11 @@ function hideAllScreens() {
 const generateUniqueId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-const getReviewArrayForLevel = () => REVIEW_CURRICULUM.BUILDING || [];
+// ✅ إصلاح: دالة تاخذ المستوى وتعيد المصفوفة المناسبة
+const getReviewArrayForLevel = (level = "BUILDING") => {
+  const key = level || "BUILDING";
+  return REVIEW_CURRICULUM[key] || REVIEW_CURRICULUM.BUILDING || [];
+};
 
 /** جلب جميع الطلاب مرتبين بالنقاط مع فلتر اختياري */
 async function fetchAllStudentsSortedByPoints(filterFn) {
@@ -213,7 +214,6 @@ function isInCurrentHalaqa(student) {
   // حلقة واحدة فقط – كل الطلاب مشمولين
   return true;
 }
-
 
 function updateHalaqaToggleUI() {
   if (!halaqaOnsiteBtn || !halaqaOnlineBtn) return;
@@ -309,15 +309,15 @@ async function displayHalaqaScreen(loginCode, halaqaType) {
       return String(aCode).localeCompare(String(bCode), "ar");
     });
 
-halaqaStudentsGrid.innerHTML = "";
+    halaqaStudentsGrid.innerHTML = "";
     allStudents.forEach((s) => {
       const tile = document.createElement("div");
       tile.className = "halaqa-tile";
       tile.dataset.code = s.code;
-       tile.innerHTML = `
-    <div class="halaqa-tile-code">${s.code}</div>
-    <div class="halaqa-tile-line">${s.name}</div>
-  `;
+      tile.innerHTML = `
+        <div class="halaqa-tile-code">${s.code}</div>
+        <div class="halaqa-tile-line">${s.name}</div>
+      `;
       halaqaStudentsGrid.appendChild(tile);
     });
   } catch (e) {
@@ -386,11 +386,9 @@ function getCurrentHifzMission(student) {
     requireAudioFirst: !!first.audio_id,
     audioKey: student.code
       ? `hifz_${student.code}_${first.audio_id || startIndex}`
-      : null,          // 👈 مفتاح التخزين في localStorage
+      : null,
   };
 }
-
-
 
 function getNextHifzMission(student) {
   const all = HIFZ_CURRICULUM;
@@ -514,7 +512,6 @@ async function loadAssistantTasksForCurrentUser() {
   if (!parentAssistantTasksList) return;
   renderAssistantTasksList(assigned, parentAssistantTasksList, "ولي الأمر");
 }
-
 
 /** رسم قائمة مهام المساعد */
 function renderAssistantTasksList(list, container, roleLabel) {
@@ -670,8 +667,7 @@ async function displayStudentDashboard(student) {
     hideAllScreens();
     studentScreen.classList.remove("hidden");
 
-    // لو الطالب مفعّل كمساعد، حمّل مهامه المساعدة
-        // صفحة الطالب لا تعرض مهام المساعد نهائياً
+    // صفحة الطالب لا تعرض مهام المساعد نهائياً
     if (studentAssistantTasksList) {
       studentAssistantTasksList.innerHTML = "";
     }
@@ -687,7 +683,6 @@ async function displayStudentDashboard(student) {
 }
 
 function renderStudentTasks(student) {
-  // تفريغ منطقة المهام
   studentTasksDiv.innerHTML = "";
   const tasksArray = Array.isArray(student.tasks) ? student.tasks : [];
   const wrap = document.createElement("div");
@@ -695,9 +690,7 @@ function renderStudentTasks(student) {
   const hifzPaused = !!student.pause_hifz;
   const murajaaPaused = !!student.pause_murajaa;
 
-  // =========================
   // 1) مهمة الحفظ
-  // =========================
   const hifzMission = !hifzPaused ? getCurrentHifzMission(student) : null;
   if (hifzMission) {
     const pendingCurriculumTask = tasksArray.find(
@@ -712,44 +705,39 @@ function renderStudentTasks(student) {
       pendingCurriculumTask.status === "pending_assistant";
 
     wrap.appendChild(
-  buildMissionCard({
-    title: "🎯 الحفظ",
-    tagClass: "hifz",
-    description: hifzMission.description,
-    points: hifzMission.points,
-    pendingText: pendingCurriculumTask
-      ? isAssistantPending
-        ? "قيد المراجعة لدى المساعد..."
-        : "قيد المراجعة لدى المعلم..."
-      : "",
-    buttonText: pendingCurriculumTask
-      ? isAssistantPending
-        ? "قيد المراجعة"
-        : "إلغاء الإرسال"
-      : "أنجزت المهمة ✅",
-    disabled: !!pendingCurriculumTask && isAssistantPending,
-    onClick: () =>
-      pendingCurriculumTask
-        ? !isAssistantPending &&
-          cancelCurriculumTask(
-            student.code,
-            "hifz",
-            hifzMission.startIndex
-          )
-        : submitCurriculumTask(student.code, hifzMission),
-    audioId: hifzMission.audioId,           // 👈 رقم ملف الصوت
-    requireAudioFirst: true,               // 👈 لازم يسمع ٣ مرات قبل الإنجاز
-    audioKey: hifzMission.audioKey,        // 👈 عشان الحفظ في localStorage
-  })
-);
-
-
-
+      buildMissionCard({
+        title: "🎯 الحفظ",
+        tagClass: "hifz",
+        description: hifzMission.description,
+        points: hifzMission.points,
+        pendingText: pendingCurriculumTask
+          ? isAssistantPending
+            ? "قيد المراجعة لدى المساعد..."
+            : "قيد المراجعة لدى المعلم..."
+          : "",
+        buttonText: pendingCurriculumTask
+          ? isAssistantPending
+            ? "قيد المراجعة"
+            : "إلغاء الإرسال"
+          : "أنجزت المهمة ✅",
+        disabled: !!pendingCurriculumTask && isAssistantPending,
+        onClick: () =>
+          pendingCurriculumTask
+            ? !isAssistantPending &&
+              cancelCurriculumTask(
+                student.code,
+                "hifz",
+                hifzMission.startIndex
+              )
+            : submitCurriculumTask(student.code, hifzMission),
+        audioId: hifzMission.audioId,
+        requireAudioFirst: true,
+        audioKey: hifzMission.audioKey,
+      })
+    );
   }
 
-  // =========================
   // 2) مهمة المراجعة
-  // =========================
   const murMission = !murajaaPaused ? getCurrentMurajaaMission(student) : null;
   if (murMission) {
     const pendingMurTask = tasksArray.find(
@@ -789,9 +777,7 @@ function renderStudentTasks(student) {
     );
   }
 
-  // =========================
   // 3) المهام العامة
-  // =========================
   const generalTasks = tasksArray.filter(
     (t) => t.type === "general" && t.status !== "completed"
   );
@@ -844,9 +830,6 @@ function renderStudentTasks(student) {
     wrap.appendChild(card);
   }
 
-  // =========================
-  // 4) لا توجد مهام
-  // =========================
   if (
     !hifzMission &&
     !murMission &&
@@ -860,9 +843,6 @@ function renderStudentTasks(student) {
     studentTasksDiv.appendChild(wrap);
   }
 }
-
-
-
 
 function buildMissionCard({
   title,
@@ -896,7 +876,6 @@ function buildMissionCard({
   const footer = card.querySelector(".task-footer");
   const body = card.querySelector(".task-body");
 
-  // زر الإنجاز
   const btn = document.createElement("button");
   btn.className = "button success";
   btn.textContent = buttonText;
@@ -904,7 +883,6 @@ function buildMissionCard({
   if (disabled) {
     btn.disabled = true;
   } else if (audioId && requireAudioFirst) {
-    // ممنوع الإنجاز قبل العدد المطلوب من الاستماع
     btn.disabled = true;
   } else {
     btn.addEventListener("click", onClick);
@@ -912,7 +890,7 @@ function buildMissionCard({
 
   footer.appendChild(btn);
 
-  // 🔊 جزء الصوت – فقط لو فيه audioId
+  // الصوت لو موجود
   if (audioId && body) {
     const audioWrapper = document.createElement("div");
     audioWrapper.style.marginTop = "6px";
@@ -927,14 +905,12 @@ function buildMissionCard({
 
     const audio = document.createElement("audio");
     audio.src = `${audioId}.mp3`;
-    audio.preload = "auto"; // تحميل خفيف
-    // ما فيه controls → الطالب ما يقدر يسحب المؤشر لنهاية الملف
+    audio.preload = "auto";
 
     const requiredPlays = 3;
     let plays = 0;
-    let autoPlaying = false; // هل السلسلة الآلية شغالة الآن؟
+    let autoPlaying = false;
 
-    // استرجاع العداد من localStorage
     if (audioKey && typeof localStorage !== "undefined") {
       const saved = parseInt(localStorage.getItem(audioKey) || "0", 10);
       if (!Number.isNaN(saved)) {
@@ -943,15 +919,12 @@ function buildMissionCard({
     }
     counter.textContent = `${plays} / ${requiredPlays}  استماع`;
 
-    // لو الطالب مكمّل من قبل → فعّل زر الإنجاز
     if (!disabled && requireAudioFirst && plays >= requiredPlays && btn.disabled) {
       btn.disabled = false;
       btn.addEventListener("click", onClick);
     }
 
-    // ضغطة واحدة تبدأ سلسلة 3 مرات
     playBtn.addEventListener("click", () => {
-      // لو كان خلص 3 سابقًا وودك تعيده من جديد → نرجّع العداد للصفر
       if (plays >= requiredPlays) {
         plays = 0;
         if (audioKey && typeof localStorage !== "undefined") {
@@ -970,12 +943,11 @@ function buildMissionCard({
     });
 
     audio.addEventListener("ended", () => {
-      if (!autoPlaying) return; // لو كان التشغيل مو من السلسلة الآلية نتجاهل
+      if (!autoPlaying) return;
 
       plays += 1;
       if (plays > requiredPlays) plays = requiredPlays;
 
-      // حفظ في localStorage
       if (audioKey && typeof localStorage !== "undefined") {
         localStorage.setItem(audioKey, String(plays));
       }
@@ -983,7 +955,6 @@ function buildMissionCard({
       counter.textContent = `${plays} / ${requiredPlays}  استماع`;
 
       if (plays < requiredPlays) {
-        // نعيد المقطع تلقائيًا
         try {
           audio.currentTime = 0;
           audio.play();
@@ -991,7 +962,6 @@ function buildMissionCard({
           console.error("audio replay error", e);
         }
       } else {
-        // خلصنا 3 مرات
         autoPlaying = false;
         playBtn.textContent = "🔁";
 
@@ -1010,8 +980,6 @@ function buildMissionCard({
 
   return card;
 }
-
-
 
 
 
@@ -2335,6 +2303,7 @@ function refreshTeacherView() {
   else if (id === "curriculum-tab") displayCurriculumsInTeacherPanel();
 }
 
+// في النهاية:
 populateHifzSelects();
 populateMurajaaStartSelect();
 console.log(
