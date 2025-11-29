@@ -107,47 +107,23 @@
       <button id="logout-button-student" class="button danger">تسجيل الخروج</button>
     </div>
   </header>
-
-  <!-- تبويبات الطالب: مهامي / مهام المساعد -->
+  <!-- تبويبات الطالب: تبويب واحد لمهام المساعد -->
   <nav class="student-tabs">
-
-    </button>
     <button class="student-tab-button" data-tab="student-assistant-tab">
       مهام المساعد
     </button>
   </nav>
 
-  <!-- تبويب: مهامي الحالية -->
-  <section id="student-main-tasks" class="tasks-section">
-    <h3>مهامي الحالية</h3>
-    <div id="student-tasks" class="tasks-list">
-      <p class="message info">لا توجد مهام حالياً. وفقك الله 🤍</p>
-    </div>
-  </section>
-
-  <!-- تبويب: مهام المساعد (يظهر فقط عند اختيار التبويب) -->
-  <section id="student-assistant-tab" class="tasks-section hidden">
-    <h3>مهام المساعد</h3>
-    <p class="info-text">
-      إذا كنت طالبًا مساعدًا، ستظهر هنا المهام التي وجّهها لك المعلم لمراجعتها.
-    </p>
-    <div id="student-assistant-tasks" class="tasks-list">
-      <!-- يتم ملؤها من app.js -->
-    </div>
-  </section>
-
-  <!-- كروت التقدم بعد التبويبات -->
+  <!-- كروت التقدم أعلى صفحة الطالب -->
   <section class="progress-section">
     <!-- بطاقة الحفظ -->
     <div class="progress-card hifz">
       <h3>تقدم الحفظ</h3>
 
-      <!-- المهمة الحالية (يربطها app.js بـ studentHifzProgressLabel) -->
       <p id="student-hifz-progress-label" class="small-text">
         المهمة الحالية: —
       </p>
 
-      <!-- صف الشريط + النسبة -->
       <div class="progress-inline">
         <div class="progress-bar">
           <div id="student-hifz-progress-bar" class="progress-fill"></div>
@@ -157,7 +133,6 @@
         </p>
       </div>
 
-      <!-- المهمة القادمة -->
       <p id="student-hifz-next-label" class="small-text muted" style="margin:.4rem 0 0;">
         المهمة القادمة: —
       </p>
@@ -167,7 +142,6 @@
     <div class="progress-card murajaa">
       <h3>تقدم المراجعة</h3>
 
-      <!-- المهمة الحالية -->
       <p id="student-murajaa-progress-label" class="small-text">
         المهمة الحالية: —
       </p>
@@ -181,13 +155,30 @@
         </p>
       </div>
 
-      <!-- المهمة القادمة -->
       <p id="student-murajaa-next-label" class="small-text muted" style="margin:.4rem 0 0;">
         المهمة القادمة: —
       </p>
     </div>
   </section>
-</div>
+
+  <!-- تبويب: مهامي الحالية -->
+  <section id="student-main-tasks" class="tasks-section">
+    <h3>مهامي الحالية</h3>
+    <div id="student-tasks" class="tasks-list">
+      <p class="message info">لا توجد مهام حالياً. وفقك الله 🤍</p>
+    </div>
+  </section>
+
+  <!-- تبويب: مهام المساعد (يظهر عند اختيار التبويب) -->
+  <section id="student-assistant-tab" class="tasks-section hidden">
+    <h3>مهام المساعد</h3>
+    <p class="info-text">
+      إذا كنت طالبًا مساعدًا، ستظهر هنا المهام التي وجّهها لك المعلم لمراجعتها.
+    </p>
+    <div id="student-assistant-tasks" class="tasks-list">
+      <!-- يتم ملؤها من app.js -->
+    </div>
+  </section>
 
 
 
