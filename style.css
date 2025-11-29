@@ -946,3 +946,27 @@ body {
 .task-card .task-footer button {
   order: 2;
 }
+/* ——— إعادة ترتيب الفوتر بحيث:
+     • النقاط يمين
+     • زر إنجاز المهمة يسار
+     • على نفس السطر ——— */
+
+.task-card .task-footer {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-top: 12px !important;
+}
+
+/* النقاط يمين */
+.task-card .task-points-tag {
+  margin: 0 !important;
+  order: 1 !important;
+}
+
+/* زر إنجاز المهمة يسار */
+.task-card .task-footer button {
+  order: 2 !important;
+}
