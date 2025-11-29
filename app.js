@@ -1,3 +1,7 @@
+// ==================================================
+// 1) إعدادات Firebase + الثوابت العامة
+// ==================================================
+
 // app.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -28,120 +32,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ==================================================
+// 2) مساعدات عامة + الحالة العامة
+// ==================================================
+
 const $ = (s) => document.querySelector(s);
-
-const authScreen = $("#auth-screen");
-const userCodeInput = $("#user-code");
-const loginButton = $("#login-button");
-const authMessage = $("#auth-message");
-
-const tabButtons = document.querySelectorAll(".tab-button");
-
-const halaqaOnsiteBtn = $("#halaqa-onsite-btn");
-const halaqaOnlineBtn = $("#halaqa-online-btn");
-
-const studentScreen = $("#student-screen");
-const welcomeStudent = $("#welcome-student");
-
-const studentPlanStrip = $("#student-plan-strip");
-const stripPlan = $("#strip-plan");
-const stripPoints = $("#strip-points");
-const stripRank = $("#strip-rank");
-const studentPlanLine = $("#student-plan-line");
-
-const studentHifzNextLabel = $("#student-hifz-next-label");
-const studentMurajaaNextLabel = $("#student-murajaa-next-label");
-
-const studentHifzProgressLabel = $("#student-hifz-progress-label");
-const studentMurajaaProgressLabel = $("#student-murajaa-progress-label");
-const studentHifzProgressBar = $("#student-hifz-progress-bar");
-const studentMurajaaProgressBar = $("#student-murajaa-progress-bar");
-const studentHifzProgressPercent = $("#student-hifz-progress-percent");
-const studentMurajaaProgressPercent = $("#student-murajaa-progress-percent");
-const studentMurajaaLevelLabel = $("#student-murajaa-level-label");
-const studentTotalPoints = $("#student-total-points");
-const studentRankText = $("#student-rank-text");
-const studentTasksDiv = $("#student-tasks");
-const logoutButtonStudent = $("#logout-button-student");
-
-// حاويات مهام المساعد (لو موجودة في HTML)
-const studentAssistantTasksList = $("#student-assistant-tasks");
-const parentAssistantTasksList = $("#parent-assistant-tasks");
-
-// تبويبات الطالب (مهامي / مهام المساعد)
-const studentMainTasksSection = $("#student-main-tasks");
-const studentAssistantTabSection = $("#student-assistant-tab");
-const studentTabButtons = document.querySelectorAll(".student-tab-button");
-
-// إخفاء تبويب مهام المساعد في صفحة الطالب نهائياً
-if (studentAssistantTabSection) {
-  studentAssistantTabSection.classList.add("hidden");
-}
-// ما فيه تبويبات للطالب – دائماً "مهامي"
-studentTabButtons.forEach((btn) => btn.classList.add("hidden"));
-
-function activateStudentTab() {
-  // دائماً نظهر صفحة المهام فقط
-  if (studentMainTasksSection) studentMainTasksSection.classList.remove("hidden");
-  if (studentAssistantTabSection) studentAssistantTabSection.classList.add("hidden");
-
-  // كروت التقدم دائماً ظاهرة
-  const progressSection = document.querySelector(".progress-section");
-  if (progressSection) progressSection.classList.remove("hidden");
-}
-
-// ربط أزرار تبويبات الطالب (مع أنها حالياً مخفية)
-studentTabButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    activateStudentTab(btn.dataset.tab);
-  });
-});
-
-const teacherScreen = $("#teacher-screen");
-const logoutButtonTeacher = $("#logout-button-teacher");
-
-const refreshStudentButton = $("#refresh-student-button");
-const refreshTeacherButton = $("#refresh-teacher-button");
-
-const assignTaskStudentCode = $("#assign-task-student-code");
-const assignTaskType = $("#assign-task-type");
-const assignTaskDescription = $("#assign-task-description");
-const assignTaskPoints = $("#assign-task-points");
-const assignIndividualTaskButton = $("#assign-individual-task-button");
-const assignGroupTaskButton = $("#assign-group-task-button");
-const assignTaskMessage = $("#assign-task-message");
-
-const studentList = $("#student-list");
-const studentFormTitle = $("#student-form-title");
-const newStudentCodeInput = $("#new-student-code");
-const newStudentNameInput = $("#new-student-name");
-const newStudentParentNameInput = $("#new-student-parent-name");
-const newStudentParentCodeInput = $("#new-student-parent-code");
-const newStudentHifzStart = $("#new-student-hifz-start");
-const newStudentHifzEnd = $("#new-student-hifz-end");
-const newStudentHifzLevel = $("#new-student-hifz-level");
-const newStudentMurajaaLevel = $("#new-student-murajaa-level");
-const newStudentMurajaaStart = $("#new-student-murajaa-start");
-const newStudentHalaqa = $("#new-student-halaqa");
-const registerStudentButton = $("#register-student-button");
-const registerStudentMessage = $("#register-student-message");
-
-const hifzCurriculumDisplay = $("#hifz-curriculum-display");
-const murajaaCurriculumDisplay = $("#murajaa-curriculum-display");
-
-const pendingTasksList = $("#pending-tasks-list");
-const honorBoardDiv = $("#honor-board");
-
-const parentScreen = $("#parent-screen");
-const welcomeParent = $("#welcome-parent");
-const logoutButtonParent = $("#logout-button-parent");
-const parentChildrenList = $("#parent-children-list");
-
-const halaqaScreen = $("#halaqa-screen");
-const halaqaTitle = $("#halaqa-title");
-const halaqaSubtitle = $("#halaqa-subtitle");
-const halaqaBackButton = $("#halaqa-back-button");
-const halaqaStudentsGrid = $("#halaqa-students-grid");
 
 let currentUser = null;
 let editingStudentCode = null;
@@ -160,39 +55,10 @@ let lastHalaqaType = null;
 const safeSetText = (el, t = "") => el && (el.textContent = t);
 const safeSetWidth = (el, pct = 0) => el && (el.style.width = `${pct}%`);
 
-const getStudentEls = () => ({
-  welcome: welcomeStudent,
-  hifzLabel: studentHifzProgressLabel,
-  murLabel: studentMurajaaProgressLabel,
-  hifzBar: studentHifzProgressBar,
-  murBar: studentMurajaaProgressBar,
-  hifzPct: studentHifzProgressPercent,
-  murPct: studentMurajaaProgressPercent,
-  murLevel: studentMurajaaLevelLabel,
-  totalPoints: studentTotalPoints,
-  rankText: studentRankText,
-});
-
-const showMessage = (el, msg, type = "info") => {
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.remove("hidden", "error", "success", "info");
-  el.classList.add(type);
-  setTimeout(() => el.classList.add("hidden"), 5000);
-};
-
-function hideAllScreens() {
-  authScreen?.classList.add("hidden");
-  studentScreen?.classList.add("hidden");
-  teacherScreen?.classList.add("hidden");
-  parentScreen?.classList.add("hidden");
-  halaqaScreen?.classList.add("hidden");
-}
-
 const generateUniqueId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-// ✅ إصلاح: دالة تاخذ المستوى وتعيد المصفوفة المناسبة
+// ✅ دالة تعيد مصفوفة المراجعة حسب المستوى
 const getReviewArrayForLevel = (level = "BUILDING") => {
   const key = level || "BUILDING";
   return REVIEW_CURRICULUM[key] || REVIEW_CURRICULUM.BUILDING || [];
@@ -215,10 +81,20 @@ function isInCurrentHalaqa(student) {
   return true;
 }
 
-function updateHalaqaToggleUI() {
-  if (!halaqaOnsiteBtn || !halaqaOnlineBtn) return;
-  halaqaOnsiteBtn.classList.toggle("active", currentHalaqa === "ONSITE");
-  halaqaOnlineBtn.classList.toggle("active", currentHalaqa === "ONLINE");
+function showMessage(el, msg, type = "info") {
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove("hidden", "error", "success", "info");
+  el.classList.add(type);
+  setTimeout(() => el.classList.add("hidden"), 5000);
+}
+
+function hideAllScreens() {
+  authScreen?.classList.add("hidden");
+  studentScreen?.classList.add("hidden");
+  teacherScreen?.classList.add("hidden");
+  parentScreen?.classList.add("hidden");
+  halaqaScreen?.classList.add("hidden");
 }
 
 function computeRankMapForGroup(students) {
@@ -258,6 +134,132 @@ function buildGroupedRanks(students) {
   return { buildingSorted, buildingRankMap, devAdvSorted, devAdvRankMap };
 }
 
+// ==================================================
+// 3) مراجع عناصر الواجهة (DOM)
+//    3-1) شاشة الدخول
+// ==================================================
+
+const authScreen = $("#auth-screen");
+const userCodeInput = $("#user-code");
+const loginButton = $("#login-button");
+const authMessage = $("#auth-message");
+
+// تبويبات المعلم
+const tabButtons = document.querySelectorAll(".tab-button");
+
+// أزرار اختيار نوع الحلقة (في واجهة المعلم إن وُجدت)
+const halaqaOnsiteBtn = $("#halaqa-onsite-btn");
+const halaqaOnlineBtn = $("#halaqa-online-btn");
+
+// ==================================================
+// 3-2) شاشة الطالب
+// ==================================================
+
+const studentScreen = $("#student-screen");
+const welcomeStudent = $("#welcome-student");
+
+const studentPlanStrip = $("#student-plan-strip");
+const stripPlan = $("#strip-plan");
+const stripPoints = $("#strip-points");
+const stripRank = $("#strip-rank");
+const studentPlanLine = $("#student-plan-line");
+
+const studentHifzNextLabel = $("#student-hifz-next-label");
+const studentMurajaaNextLabel = $("#student-murajaa-next-label");
+
+const studentHifzProgressLabel = $("#student-hifz-progress-label");
+const studentMurajaaProgressLabel = $("#student-murajaa-progress-label");
+const studentHifzProgressBar = $("#student-hifz-progress-bar");
+const studentMurajaaProgressBar = $("#student-murajaa-progress-bar");
+const studentHifzProgressPercent = $("#student-hifz-progress-percent");
+const studentMurajaaProgressPercent = $("#student-murajaa-progress-percent");
+const studentMurajaaLevelLabel = $("#student-murajaa-level-label");
+const studentTotalPoints = $("#student-total-points");
+const studentRankText = $("#student-rank-text");
+const studentTasksDiv = $("#student-tasks");
+const logoutButtonStudent = $("#logout-button-student");
+const refreshStudentButton = $("#refresh-student-button");
+
+// تبويبات الطالب (مهامي / مهام المساعد)
+const studentAssistantTasksList = $("#student-assistant-tasks");
+const studentMainTasksSection = $("#student-main-tasks");
+const studentAssistantTabSection = $("#student-assistant-tab");
+const studentTabButtons = document.querySelectorAll(".student-tab-button");
+
+// ==================================================
+// 3-3) شاشة المعلم
+// ==================================================
+
+const teacherScreen = $("#teacher-screen");
+const logoutButtonTeacher = $("#logout-button-teacher");
+const refreshTeacherButton = $("#refresh-teacher-button");
+
+const assignTaskStudentCode = $("#assign-task-student-code");
+const assignTaskType = $("#assign-task-type");
+const assignTaskDescription = $("#assign-task-description");
+const assignTaskPoints = $("#assign-task-points");
+const assignIndividualTaskButton = $("#assign-individual-task-button");
+const assignGroupTaskButton = $("#assign-group-task-button");
+const assignTaskMessage = $("#assign-task-message");
+
+const studentList = $("#student-list");
+const studentFormTitle = $("#student-form-title");
+const newStudentCodeInput = $("#new-student-code");
+const newStudentNameInput = $("#new-student-name");
+const newStudentParentNameInput = $("#new-student-parent-name");
+const newStudentParentCodeInput = $("#new-student-parent-code");
+const newStudentHifzStart = $("#new-student-hifz-start");
+const newStudentHifzEnd = $("#new-student-hifz-end");
+const newStudentHifzLevel = $("#new-student-hifz-level");
+const newStudentMurajaaLevel = $("#new-student-murajaa-level");
+const newStudentMurajaaStart = $("#new-student-murajaa-start");
+const newStudentHalaqa = $("#new-student-halaqa");
+const registerStudentButton = $("#register-student-button");
+const registerStudentMessage = $("#register-student-message");
+
+const hifzCurriculumDisplay = $("#hifz-curriculum-display");
+const murajaaCurriculumDisplay = $("#murajaa-curriculum-display");
+
+const pendingTasksList = $("#pending-tasks-list");
+const honorBoardDiv = $("#honor-board");
+
+// ==================================================
+// 3-4) شاشة ولي الأمر
+// ==================================================
+
+const parentScreen = $("#parent-screen");
+const welcomeParent = $("#welcome-parent");
+const logoutButtonParent = $("#logout-button-parent");
+const parentChildrenList = $("#parent-children-list");
+const parentAssistantTasksList = $("#parent-assistant-tasks");
+
+// ==================================================
+// 3-5) شاشة كود الحلقة (شبكة الطلاب)
+// ==================================================
+
+const halaqaScreen = $("#halaqa-screen");
+const halaqaTitle = $("#halaqa-title");
+const halaqaSubtitle = $("#halaqa-subtitle");
+const halaqaBackButton = $("#halaqa-back-button");
+const halaqaStudentsGrid = $("#halaqa-students-grid");
+
+// ==================================================
+// 4) دوال مساعدة خاصة بالطالب (تخطيط/نسب/دوائر)
+// ==================================================
+
+const getStudentEls = () => ({
+  welcome: welcomeStudent,
+  hifzLabel: studentHifzProgressLabel,
+  murLabel: studentMurajaaProgressLabel,
+  hifzBar: studentHifzProgressBar,
+  murBar: studentMurajaaProgressBar,
+  hifzPct: studentHifzProgressPercent,
+  murPct: studentMurajaaProgressPercent,
+  murLevel: studentMurajaaLevelLabel,
+  totalPoints: studentTotalPoints,
+  rankText: studentRankText,
+});
+
 function updatePlanStrip({
   startSurah = "—",
   endSurah = "—",
@@ -271,90 +273,6 @@ function updatePlanStrip({
   safeSetText(stripPoints, `النقاط: ${points}`);
   safeSetText(stripRank, `الترتيب: ${rank}`);
 }
-
-async function displayHalaqaScreen(loginCode, halaqaType) {
-  try {
-    hideAllScreens();
-    halaqaScreen.classList.remove("hidden");
-
-    const halaqaLabel =
-      halaqaType === "ONLINE" ? "الحلقة الإلكترونية" : "الحلقة الحضورية";
-    safeSetText(halaqaTitle, `حسابات ${halaqaLabel}`);
-    safeSetText(
-      halaqaSubtitle,
-      `تم الدخول بواسطة كود الحلقة: ${loginCode}`
-    );
-
-    const snap = await getDocs(collection(db, "students"));
-    const allStudents = [];
-    snap.forEach((docSnap) => {
-      const s = docSnap.data();
-      const h = s.halaqa || "ONSITE";
-      if (h !== halaqaType) return;
-      allStudents.push(s);
-    });
-
-    if (!allStudents.length) {
-      halaqaStudentsGrid.innerHTML =
-        `<p class="message info">لا يوجد طلاب مسجلون في هذه الحلقة.</p>`;
-      return;
-    }
-
-    allStudents.sort((a, b) => {
-      const aCode = a.code || "";
-      const bCode = b.code || "";
-      const aNum = parseInt(aCode, 10);
-      const bNum = parseInt(bCode, 10);
-      if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) return aNum - bNum;
-      return String(aCode).localeCompare(String(bCode), "ar");
-    });
-
-    halaqaStudentsGrid.innerHTML = "";
-    allStudents.forEach((s) => {
-      const tile = document.createElement("div");
-      tile.className = "halaqa-tile";
-      tile.dataset.code = s.code;
-      tile.innerHTML = `
-        <div class="halaqa-tile-code">${s.code}</div>
-        <div class="halaqa-tile-line">${s.name}</div>
-      `;
-      halaqaStudentsGrid.appendChild(tile);
-    });
-  } catch (e) {
-    console.error("displayHalaqaScreen error:", e);
-    halaqaStudentsGrid.innerHTML =
-      `<p class="message error">حدث خطأ في تحميل طلاب الحلقة: ${e.message}</p>`;
-  }
-}
-
-halaqaStudentsGrid?.addEventListener("click", async (e) => {
-  const tile = e.target.closest(".halaqa-tile");
-  if (!tile) return;
-  const code = tile.dataset.code;
-  if (!code) return;
-
-  try {
-    const student = await fetchStudentByCode(code);
-    if (!student) {
-      alert("لم يتم العثور على بيانات هذا الطالب.");
-      return;
-    }
-    currentUser = { role: "student", code: student.code };
-    lastStudentEntrySource = "HALAQA";
-    await displayStudentDashboard(student);
-  } catch (err) {
-    console.error("login from halaqa tile error:", err);
-    alert("حدث خطأ أثناء فتح حساب الطالب.");
-  }
-});
-
-halaqaBackButton?.addEventListener("click", () => {
-  currentUser = null;
-  lastStudentEntrySource = null;
-  hideAllScreens();
-  authScreen.classList.remove("hidden");
-  userCodeInput.value = "";
-});
 
 function getCurrentHifzMission(student) {
   const all = HIFZ_CURRICULUM;
@@ -528,101 +446,130 @@ function updateStudentCircles(student, hifzPct, murPct) {
   if (mMini) mMini.style.width = `${murPct}%`;
 }
 
-/** تحميل مهام المساعد لأي مستخدم حالي (طالب أو ولي أمر) */
-async function loadAssistantTasksForCurrentUser() {
-  if (!currentUser || currentUser.role !== "parent") return;
+// ==================================================
+// 5) منطق شاشة الحلقة (كود الحلقة)
+// ==================================================
 
-  const snap = await getDocs(collection(db, "students"));
-  const assigned = [];
-
-  snap.forEach((docSnap) => {
-    const s = docSnap.data();
-    const tasks = Array.isArray(s.tasks) ? s.tasks : [];
-    tasks.forEach((t) => {
-      if (t.status !== "pending_assistant") return;
-      if (
-        t.assistant_type === "parent" &&
-        String(t.assistant_code || "") === String(currentUser.code)
-      ) {
-        assigned.push({ student: s, task: t });
-      }
-    });
-  });
-
-  if (!parentAssistantTasksList) return;
-  renderAssistantTasksList(assigned, parentAssistantTasksList, "ولي الأمر");
+function updateHalaqaToggleUI() {
+  if (!halaqaOnsiteBtn || !halaqaOnlineBtn) return;
+  halaqaOnsiteBtn.classList.toggle("active", currentHalaqa === "ONSITE");
+  halaqaOnlineBtn.classList.toggle("active", currentHalaqa === "ONLINE");
 }
 
-/** رسم قائمة مهام المساعد */
-function renderAssistantTasksList(list, container, roleLabel) {
-  if (!container) return;
-  container.innerHTML = "";
+async function displayHalaqaScreen(loginCode, halaqaType) {
+  try {
+    hideAllScreens();
+    halaqaScreen.classList.remove("hidden");
 
-  if (!list.length) {
-    container.innerHTML =
-      '<p class="message info">لا توجد مهام مسندة لك حاليًا.</p>';
-    return;
+    const halaqaLabel =
+      halaqaType === "ONLINE" ? "الحلقة الإلكترونية" : "الحلقة الحضورية";
+    safeSetText(halaqaTitle, `حسابات ${halaqaLabel}`);
+    safeSetText(
+      halaqaSubtitle,
+      `تم الدخول بواسطة كود الحلقة: ${loginCode}`
+    );
+
+    const snap = await getDocs(collection(db, "students"));
+    const allStudents = [];
+    snap.forEach((docSnap) => {
+      const s = docSnap.data();
+      const h = s.halaqa || "ONSITE";
+      if (h !== halaqaType) return;
+      allStudents.push(s);
+    });
+
+    if (!allStudents.length) {
+      halaqaStudentsGrid.innerHTML =
+        `<p class="message info">لا يوجد طلاب مسجلون في هذه الحلقة.</p>`;
+      return;
+    }
+
+    allStudents.sort((a, b) => {
+      const aCode = a.code || "";
+      const bCode = b.code || "";
+      const aNum = parseInt(aCode, 10);
+      const bNum = parseInt(bCode, 10);
+      if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) return aNum - bNum;
+      return String(aCode).localeCompare(String(bCode), "ar");
+    });
+
+    halaqaStudentsGrid.innerHTML = "";
+    allStudents.forEach((s) => {
+      const tile = document.createElement("div");
+      tile.className = "halaqa-tile";
+      tile.dataset.code = s.code;
+      tile.innerHTML = `
+        <div class="halaqa-tile-code">${s.code}</div>
+        <div class="halaqa-tile-line">${s.name}</div>
+      `;
+      halaqaStudentsGrid.appendChild(tile);
+    });
+  } catch (e) {
+    console.error("displayHalaqaScreen error:", e);
+    halaqaStudentsGrid.innerHTML =
+      `<p class="message error">حدث خطأ في تحميل طلاب الحلقة: ${e.message}</p>`;
   }
-
-  list.forEach(({ student, task }) => {
-    const block = document.createElement("div");
-    block.className = "review-student-block";
-
-    const title = document.createElement("div");
-    title.className = "review-student-title";
-    title.textContent = `طالب: ${student.name} (${student.code})`;
-    block.appendChild(title);
-
-    const item = document.createElement("div");
-    item.className = "review-task-item";
-    item.innerHTML = `
-      <div class="review-task-header">
-        <span>${
-          task.type === "hifz"
-            ? "مهمة حفظ"
-            : task.type === "murajaa"
-            ? "مهمة مراجعة"
-            : "مهمة عامة"
-        } (مسندة لمساعد ${roleLabel})</span>
-        <span>النقاط: ${task.points || 0}</span>
-      </div>
-      <div class="review-task-body">${task.description || ""}</div>
-    `;
-
-    const footer = document.createElement("div");
-    footer.className = "review-task-footer";
-
-    const ok = document.createElement("button");
-    ok.className = "button success";
-    ok.textContent = "قبول (كمساعد) ✅";
-    ok.addEventListener("click", async () => {
-      await reviewTask(student.code, task.id, "approve");
-      await loadAssistantTasksForCurrentUser();
-    });
-
-    const no = document.createElement("button");
-    no.className = "button danger";
-    no.textContent = "رفض (كمساعد) ❌";
-    no.addEventListener("click", async () => {
-      await reviewTask(student.code, task.id, "reject");
-      await loadAssistantTasksForCurrentUser();
-    });
-
-    footer.append(ok, no);
-    item.appendChild(footer);
-    block.appendChild(item);
-
-    container.appendChild(block);
-  });
 }
+
+halaqaStudentsGrid?.addEventListener("click", async (e) => {
+  const tile = e.target.closest(".halaqa-tile");
+  if (!tile) return;
+  const code = tile.dataset.code;
+  if (!code) return;
+
+  try {
+    const student = await fetchStudentByCode(code);
+    if (!student) {
+      alert("لم يتم العثور على بيانات هذا الطالب.");
+      return;
+    }
+    currentUser = { role: "student", code: student.code };
+    lastStudentEntrySource = "HALAQA";
+    await displayStudentDashboard(student);
+  } catch (err) {
+    console.error("login from halaqa tile error:", err);
+    alert("حدث خطأ أثناء فتح حساب الطالب.");
+  }
+});
+
+halaqaBackButton?.addEventListener("click", () => {
+  currentUser = null;
+  lastStudentEntrySource = null;
+  hideAllScreens();
+  authScreen.classList.remove("hidden");
+  userCodeInput.value = "";
+});
+
+// ==================================================
+// 6) منطق صفحة الطالب (Dashboard + المهام)
+// ==================================================
+
+function activateStudentTab() {
+  // دائماً نظهر صفحة المهام فقط
+  if (studentMainTasksSection) studentMainTasksSection.classList.remove("hidden");
+  if (studentAssistantTabSection) studentAssistantTabSection.classList.add("hidden");
+
+  const progressSection = document.querySelector(".progress-section");
+  if (progressSection) progressSection.classList.remove("hidden");
+}
+
+// إخفاء تبويب مهام المساعد في صفحة الطالب نهائياً
+if (studentAssistantTabSection) {
+  studentAssistantTabSection.classList.add("hidden");
+}
+studentTabButtons.forEach((btn) => btn.classList.add("hidden"));
+
+studentTabButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    activateStudentTab(btn.dataset.tab);
+  });
+});
 
 async function displayStudentDashboard(student) {
   try {
-    // ✅ احسب النِّسَب في الأول
     const hifzPct = computeHifzPercent(student);
     const murPct = computeMurajaaPercent(student);
 
-    // ✅ حدّث الدوائر العلوية (الشكل اللي في الصورة)
     updateStudentCircles(student, hifzPct, murPct);
 
     const els = getStudentEls();
@@ -699,7 +646,6 @@ async function displayStudentDashboard(student) {
       `المهمة القادمة: ${nextM ? nextM.description : "—"}`
     );
 
-    // ✅ استخدام النِّسَب المحسوبة في الأعلى للي تحت (الشريط الأزرق)
     safeSetText(els.hifzPct, `${hifzPct}%`);
     safeSetText(els.murPct, `${murPct}%`);
     safeSetWidth(els.hifzBar, hifzPct);
@@ -714,7 +660,6 @@ async function displayStudentDashboard(student) {
     hideAllScreens();
     studentScreen.classList.remove("hidden");
 
-    // صفحة الطالب لا تعرض مهام المساعد نهائياً
     if (studentAssistantTasksList) {
       studentAssistantTasksList.innerHTML = "";
     }
@@ -1027,6 +972,10 @@ function buildMissionCard({
   return card;
 }
 
+// ==================================================
+// 7) إرسال / إلغاء المهام (حفظ / مراجعة / عامة)
+// ==================================================
+
 async function submitCurriculumTask(studentCode, mission) {
   try {
     const studentRef = doc(db, "students", studentCode);
@@ -1216,24 +1165,112 @@ async function cancelGeneralTask(studentCode, taskId) {
   }
 }
 
+// ==================================================
+// 8) مهام المساعد (ولي الأمر) + التوجيه للمساعدين
+// ==================================================
+
+/** تحميل مهام المساعد لأي مستخدم حالي (حاليًا ولي الأمر فقط) */
+async function loadAssistantTasksForCurrentUser() {
+  if (!currentUser || currentUser.role !== "parent") return;
+
+  const snap = await getDocs(collection(db, "students"));
+  const assigned = [];
+
+  snap.forEach((docSnap) => {
+    const s = docSnap.data();
+    const tasks = Array.isArray(s.tasks) ? s.tasks : [];
+    tasks.forEach((t) => {
+      if (t.status !== "pending_assistant") return;
+      if (
+        t.assistant_type === "parent" &&
+        String(t.assistant_code || "") === String(currentUser.code)
+      ) {
+        assigned.push({ student: s, task: t });
+      }
+    });
+  });
+
+  if (!parentAssistantTasksList) return;
+  renderAssistantTasksList(assigned, parentAssistantTasksList, "ولي الأمر");
+}
+
+/** رسم قائمة مهام المساعد */
+function renderAssistantTasksList(list, container, roleLabel) {
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!list.length) {
+    container.innerHTML =
+      '<p class="message info">لا توجد مهام مسندة لك حاليًا.</p>';
+    return;
+  }
+
+  list.forEach(({ student, task }) => {
+    const block = document.createElement("div");
+    block.className = "review-student-block";
+
+    const title = document.createElement("div");
+    title.className = "review-student-title";
+    title.textContent = `طالب: ${student.name} (${student.code})`;
+    block.appendChild(title);
+
+    const item = document.createElement("div");
+    item.className = "review-task-item";
+    item.innerHTML = `
+      <div class="review-task-header">
+        <span>${
+          task.type === "hifz"
+            ? "مهمة حفظ"
+            : task.type === "murajaa"
+            ? "مهمة مراجعة"
+            : "مهمة عامة"
+        } (مسندة لمساعد ${roleLabel})</span>
+        <span>النقاط: ${task.points || 0}</span>
+      </div>
+      <div class="review-task-body">${task.description || ""}</div>
+    `;
+
+    const footer = document.createElement("div");
+    footer.className = "review-task-footer";
+
+    const ok = document.createElement("button");
+    ok.className = "button success";
+    ok.textContent = "قبول (كمساعد) ✅";
+    ok.addEventListener("click", async () => {
+      await reviewTask(student.code, task.id, "approve");
+      await loadAssistantTasksForCurrentUser();
+    });
+
+    const no = document.createElement("button");
+    no.className = "button danger";
+    no.textContent = "رفض (كمساعد) ❌";
+    no.addEventListener("click", async () => {
+      await reviewTask(student.code, task.id, "reject");
+      await loadAssistantTasksForCurrentUser();
+    });
+
+    footer.append(ok, no);
+    item.appendChild(footer);
+    block.appendChild(item);
+
+    container.appendChild(block);
+  });
+}
+
 /** إظهار قائمة منسدلة بالمساعدين داخل كرت المهمة */
 async function showAssistantSelector(studentCode, taskId, containerEl) {
   try {
-    // لو القائمة مفتوحة مسبقًا في نفس الكرت، نقفلها
     const existing = containerEl.querySelector(".assistant-picker");
     if (existing) {
       existing.remove();
       return;
     }
 
-    // جلب كل الطلاب للبحث عن المساعدين في نفس الحلقة الحالية
-    // جلب أولياء الأمور المفعّلين كمساعدين
     const snapAll = await getDocs(collection(db, "students"));
     const assistants = [];
 
     snapAll.forEach((d) => {
       const s = d.data();
-      // ما نهتم بنوع الحلقة هنا، فقط لو ولي الأمر مفعّل
       if (s.is_parent_assistant && s.parent_code) {
         assistants.push({
           type: "parent",
@@ -1248,7 +1285,6 @@ async function showAssistantSelector(studentCode, taskId, containerEl) {
       return;
     }
 
-    // بناء واجهة الاختيار
     const wrapper = document.createElement("div");
     wrapper.className = "assistant-picker";
     wrapper.style.marginTop = "6px";
@@ -1299,6 +1335,62 @@ async function showAssistantSelector(studentCode, taskId, containerEl) {
   }
 }
 
+/** توجيه مهمة لمساعد (ولي أمر) */
+async function forwardTaskToAssistant(
+  studentCode,
+  taskId,
+  assistantType,
+  assistantId
+) {
+  try {
+    if (!assistantType || !assistantId) {
+      alert("الرجاء اختيار مساعد صحيح.");
+      return;
+    }
+
+    const studentRef = doc(db, "students", studentCode);
+    const snap = await getDoc(studentRef);
+    if (!snap.exists()) return;
+
+    const student = snap.data();
+    const tasks = Array.isArray(student.tasks) ? student.tasks : [];
+    const idx = tasks.findIndex((t) => t.id === taskId);
+    if (idx === -1) return;
+
+    const task = tasks[idx];
+    if (task.status !== "pending") {
+      showMessage(
+        authMessage,
+        "لا يمكن توجيه مهمة ليست بانتظار المراجعة لدى المعلم.",
+        "error"
+      );
+      return;
+    }
+
+    tasks[idx] = {
+      ...task,
+      status: "pending_assistant",
+      assistant_type: assistantType,
+      assistant_code: assistantId,
+    };
+
+    await updateDoc(studentRef, { tasks });
+    await loadPendingTasksForReview();
+    showMessage(authMessage, "تم توجيه المهمة للمساعد.", "success");
+  } catch (e) {
+    console.error("Error forwardTaskToAssistant:", e);
+    showMessage(
+      authMessage,
+      `خطأ في توجيه المهمة: ${e.message}`,
+      "error"
+    );
+  }
+}
+
+// ==================================================
+// 9) لوحة مراجعة المعلم + لوحة الشرف + الطلاب
+// ==================================================
+
 async function loadPendingTasksForReview() {
   pendingTasksList.innerHTML =
     '<p class="message info">جارٍ تحميل المهام...</p>';
@@ -1315,7 +1407,7 @@ async function loadPendingTasksForReview() {
 
       const tasks = Array.isArray(student.tasks) ? student.tasks : [];
       tasks.forEach((t) => {
-        if (t.status !== "pending") return; // فقط المهام عند المعلم
+        if (t.status !== "pending") return;
         if (t.type === "hifz") pendingHifz.push({ student, task: t });
         else if (t.type === "murajaa")
           pendingMurajaa.push({ student, task: t });
@@ -1410,58 +1502,6 @@ async function loadPendingTasksForReview() {
     console.error("Error loadPendingTasksForReview:", e);
     pendingTasksList.innerHTML =
       `<p class="message error">خطأ في تحميل المهام: ${e.message}</p>`;
-  }
-}
-
-/** توجيه مهمة لمساعد (طالب / ولي أمر) – بدون إدخال رمز يدوي */
-async function forwardTaskToAssistant(
-  studentCode,
-  taskId,
-  assistantType,
-  assistantId
-) {
-  try {
-    if (!assistantType || !assistantId) {
-      alert("الرجاء اختيار مساعد صحيح.");
-      return;
-    }
-
-    const studentRef = doc(db, "students", studentCode);
-    const snap = await getDoc(studentRef);
-    if (!snap.exists()) return;
-
-    const student = snap.data();
-    const tasks = Array.isArray(student.tasks) ? student.tasks : [];
-    const idx = tasks.findIndex((t) => t.id === taskId);
-    if (idx === -1) return;
-
-    const task = tasks[idx];
-    if (task.status !== "pending") {
-      showMessage(
-        authMessage,
-        "لا يمكن توجيه مهمة ليست بانتظار المراجعة لدى المعلم.",
-        "error"
-      );
-      return;
-    }
-
-    tasks[idx] = {
-      ...task,
-      status: "pending_assistant",
-      assistant_type: assistantType, // "student" أو "parent"
-      assistant_code: assistantId, // رمز الطالب أو ولي الأمر
-    };
-
-    await updateDoc(studentRef, { tasks });
-    await loadPendingTasksForReview();
-    showMessage(authMessage, "تم توجيه المهمة للمساعد.", "success");
-  } catch (e) {
-    console.error("Error forwardTaskToAssistant:", e);
-    showMessage(
-      authMessage,
-      `خطأ في توجيه المهمة: ${e.message}`,
-      "error"
-    );
   }
 }
 
@@ -1648,102 +1688,6 @@ async function reviewTask(studentCode, taskId, action) {
   }
 }
 
-assignIndividualTaskButton?.addEventListener("click", async () => {
-  const code = assignTaskStudentCode.value.trim();
-  const type = assignTaskType.value;
-  const description = assignTaskDescription.value.trim();
-  const points = parseInt(assignTaskPoints.value, 10);
-
-  if (!code || !description || isNaN(points) || points <= 0) {
-    showMessage(
-      assignTaskMessage,
-      "الرجاء تعبئة رمز الطالب والوصف والنقاط بشكل صحيح.",
-      "error"
-    );
-    return;
-  }
-
-  const task = {
-    id: generateUniqueId(),
-    type,
-    description,
-    points,
-    status: "assigned",
-    created_at: Date.now(),
-  };
-
-  try {
-    const studentRef = doc(db, "students", code);
-    const snap = await getDoc(studentRef);
-    if (!snap.exists()) {
-      showMessage(assignTaskMessage, "الطالب غير موجود.", "error");
-      return;
-    }
-
-    const tasks = Array.isArray(snap.data().tasks) ? snap.data().tasks : [];
-    tasks.push(task);
-    await updateDoc(studentRef, { tasks });
-    showMessage(assignTaskMessage, "تم تعيين المهمة للطالب.", "success");
-  } catch (e) {
-    console.error("Error assignIndividualTask:", e);
-    showMessage(
-      assignTaskMessage,
-      `حدث خطأ في تعيين المهمة: ${e.message}`,
-      "error"
-    );
-  }
-});
-
-assignGroupTaskButton?.addEventListener("click", async () => {
-  const type = assignTaskType.value;
-  const description = assignTaskDescription.value.trim();
-  const points = parseInt(assignTaskPoints.value, 10);
-
-  if (!description || isNaN(points) || points <= 0) {
-    showMessage(
-      assignTaskMessage,
-      "الرجاء تعبئة الوصف والنقاط بشكل صحيح.",
-      "error"
-    );
-    return;
-  }
-
-  const task = {
-    id: generateUniqueId(),
-    type,
-    description,
-    points,
-    status: "assigned",
-    created_at: Date.now(),
-  };
-
-  try {
-    const snap = await getDocs(collection(db, "students"));
-    const batch = writeBatch(db);
-
-    snap.forEach((d) => {
-      const s = d.data();
-      const h = s.halaqa || "ONSITE";
-      if (h !== currentHalaqa) return;
-      batch.update(doc(db, "students", d.id), { tasks: arrayUnion(task) });
-    });
-
-    await batch.commit();
-    showMessage(
-      assignTaskMessage,
-      "تم تعيين المهمة لجميع الطلاب.",
-      "success"
-    );
-  } catch (e) {
-    console.error("Error assignGroupTask:", e);
-    showMessage(
-      assignTaskMessage,
-      `حدث خطأ في تعيين المهمة الجماعية: ${e.message}`,
-      "error"
-    );
-  }
-});
-
 function populateHifzSelects() {
   if (!newStudentHifzStart || !newStudentHifzEnd) return;
   const options = HIFZ_CURRICULUM.map(
@@ -1785,7 +1729,6 @@ async function loadStudentsForTeacher() {
       const li = document.createElement("li");
       const hifzPaused = !!s.pause_hifz;
       const murPaused = !!s.pause_murajaa;
-      const isStudentAssistant = !!s.is_student_assistant;
       const isParentAssistant = !!s.is_parent_assistant && !!s.parent_code;
 
       li.innerHTML = `
@@ -1801,7 +1744,7 @@ async function loadStudentsForTeacher() {
           <div class="student-sub">ولي الأمر: ${
             s.parent_name || "غير مسجل"
           } (${s.parent_code || "—"})</div>
-                    <div class="student-sub">
+          <div class="student-sub">
             مساعد ولي أمر: ${
               isParentAssistant ? "✅ مفعّل" : "❌ غير مفعّل"
             }
@@ -1858,7 +1801,6 @@ async function loadStudentsForTeacher() {
   }
 }
 
-/** تبديل أحد الفلاق في سجل الطالب */
 async function toggleStudentFlag(code, fieldName) {
   try {
     const studentRef = doc(db, "students", code);
@@ -2012,13 +1954,11 @@ registerStudentButton?.addEventListener("click", async () => {
 function displayCurriculumsInTeacherPanel() {
   if (!hifzCurriculumDisplay || !murajaaCurriculumDisplay) return;
 
-  // عرض منهج الحفظ
   hifzCurriculumDisplay.innerHTML = HIFZ_CURRICULUM.map(
     (it, i) =>
       `<div class="curriculum-item">(${i}) ${it.surah_name_ar} (${it.start_ayah}-${it.end_ayah}) – نقاط: ${it.points || 0}</div>`
   ).join("");
 
-  // عرض منهج المراجعة – مستوى واحد فقط (BUILDING)
   const reviewList = REVIEW_CURRICULUM.BUILDING || [];
   murajaaCurriculumDisplay.innerHTML = reviewList
     .map(
@@ -2027,6 +1967,10 @@ function displayCurriculumsInTeacherPanel() {
     )
     .join("");
 }
+
+// ==================================================
+// 10) لوحة ولي الأمر
+// ==================================================
 
 async function displayParentDashboard(parentCode) {
   try {
@@ -2134,7 +2078,6 @@ async function displayParentDashboard(parentCode) {
     hideAllScreens();
     parentScreen.classList.remove("hidden");
 
-    // لو هذا ولي أمر مساعد في أي من أبنائه، حمّل مهامه المساعدة
     const isParentAssistant = all.some(
       (s) =>
         s.is_parent_assistant &&
@@ -2152,6 +2095,10 @@ async function displayParentDashboard(parentCode) {
       `<p class="message error">خطأ في تحميل بيانات الأبناء: ${e.message}</p>`;
   }
 }
+
+// ==================================================
+// 11) تفعيل تبويبات المعلم + الدخول / الخروج / تحديث
+// ==================================================
 
 halaqaOnsiteBtn?.addEventListener("click", () => {
   currentHalaqa = "ONSITE";
@@ -2324,7 +2271,10 @@ function refreshTeacherView() {
   else if (id === "curriculum-tab") displayCurriculumsInTeacherPanel();
 }
 
-// في النهاية:
+// ==================================================
+// 12) تهيئة أولية
+// ==================================================
+
 populateHifzSelects();
 populateMurajaaStartSelect();
 console.log(
