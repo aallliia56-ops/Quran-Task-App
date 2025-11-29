@@ -849,4 +849,49 @@ body {
 #parent-screen .icon-actions .icon-button {
   font-size: 1.1rem;
 }
+/* ===== تنسيق هيدر صفحة الطالب ===== */
+#student-screen .dashboard-header {
+  align-items: center;         /* يوسّط الهيدر أفقياً */
+}
+
+#student-screen .dashboard-header > div:first-child {
+  text-align: center;          /* الاسم + الخطة في النص */
+}
+
+/* شريط الخطة في صفحة الطالب */
+#student-plan-strip {
+  justify-content: center;
+}
+
+/* ملصق الخطة: كلمة الخطة أوضح وأكبر */
+#strip-plan {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+#strip-plan::before {
+  content: "الخطة";
+  font-weight: 800;
+  margin-left: 4px;            /* مسافة بسيطة قبل النص */
+}
+
+/* ===== توسيط كروت "مهامي الحالية" ===== */
+#student-main-tasks .tasks-list {
+  text-align: center;
+}
+
+#student-main-tasks .task-card {
+  text-align: center;
+}
+
+#student-main-tasks .task-header,
+#student-main-tasks .task-footer {
+  justify-content: center;
+  flex-direction: column;      /* العنوان فوق والملصق تحته */
+  align-items: center;
+}
+
+#student-main-tasks .task-type-tag {
+  margin-top: 4px;
+}
 
