@@ -758,8 +758,8 @@ function renderStudentTasks(student) {
         points: hifzMission.points,
         pendingText: pendingCurriculumTask
           ? isAssistantPending
-            ? "قيد المراجعة لدى المساعد..."
-            : "قيد المراجعة لدى المعلم..."
+            ? ""
+            : ""
           : "",
         buttonText: pendingCurriculumTask
           ? isAssistantPending
@@ -805,8 +805,8 @@ function renderStudentTasks(student) {
         points: murMission.points,
         pendingText: pendingMurTask
           ? isAssistantPending
-            ? "قيد المراجعة لدى المساعد..."
-            : "قيد المراجعة لدى المعلم..."
+            ? ""
+            : ""
           : "",
         buttonText: pendingMurTask
           ? isAssistantPending
@@ -841,9 +841,9 @@ function renderStudentTasks(student) {
         <span class="task-points-tag">النقاط: ${task.points}</span>
         <span class="task-status-text">${
           task.status === "pending"
-            ? "قيد المراجعة لدى المعلم..."
+            ? ""
             : task.status === "pending_assistant"
-            ? "قيد المراجعة لدى المساعد..."
+            ? ""
             : task.status === "completed"
             ? "تم اعتمادها ✅"
             : "بانتظار الإنجاز"
