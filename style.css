@@ -478,6 +478,30 @@ h1 { text-align: center; margin-bottom: 10px; }
   font-size: 1rem;
 }
 
+/* جعل أول بطاقة (أعلى مهمة) أوضح قليلاً */
+#student-screen .tasks-list .task-card:first-child{
+  border-right-width: 6px;
+  border-right-color: #6AA9E9;
+  transform: translateY(-2px);
+}
+
+/* عنوان المهمة */
+#student-screen .task-title{
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* فقاعة نص المهمة في وسط الكرت */
+#student-screen .task-body.mission-text{
+  text-align: center;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #F0F5FB;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
 /* 4) جعل نص المهمة في وسط الكارت كفقاعة واضحة */
 #student-screen .task-body.mission-text{
   text-align: center;
@@ -511,17 +535,14 @@ h1 { text-align: center; margin-bottom: 10px; }
 /* توسيط زر إنجاز المهمة داخل كرت المهمة (صفحة الطالب فقط) */
 #student-screen .task-footer {
   width: 100%;
+  margin-top: 10px;
   display: flex;
-  justify-content: center !important; /* توسيط أفقي */
+  justify-content: center;   /* توسيط أفقي فعلي */
   align-items: center;
+  gap: 8px;
 }
 
 #student-screen .task-footer .button.primary {
-  width: auto;
+  min-width: 180px;          /* يخليه واضح وكبير */
   text-align: center;
-}
-
-#student-screen .task-footer{
-  margin-top: 10px;
-  justify-content: space-between;
 }
