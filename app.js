@@ -568,10 +568,20 @@ studentTabButtons.forEach((btn) => {
 
 async function displayStudentDashboard(student) {
   try {
+    // ✅ احسب النِّسَب في الأول
     const hifzPct = computeHifzPercent(student);
     const murPct = computeMurajaaPercent(student);
 
+    // ✅ إظهار/إخفاء بطاقات الحفظ والمراجعة حسب الإيقاف
+    const hifzCard = document.getElementById("hifz-circle-card");
+    const murCard  = document.getElementById("mur-circle-card");
+
+    if (hifzCard) hifzCard.classList.toggle("hidden", !!student.pause_hifz);
+    if (murCard)  murCard.classList.toggle("hidden", !!student.pause_murajaa);
+
+    // ✅ حدّث الدوائر العلوية
     updateStudentCircles(student, hifzPct, murPct);
+
 
     const els = getStudentEls();
 
