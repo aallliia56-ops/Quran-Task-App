@@ -239,6 +239,22 @@ const halaqaSubtitle = $("#halaqa-subtitle");
 const halaqaBackButton = $("#halaqa-back-button");
 const halaqaStudentsGrid = $("#halaqa-students-grid");
 
+const authScreen   = document.getElementById("auth-screen");
+const parentScreen = document.getElementById("parent-screen");
+window.addEventListener("load", () => {
+  const params = new URLSearchParams(window.location.search);
+  const parentFromLink = params.get("p"); // مثال: ?p=P100
+
+  if (parentFromLink) {
+    // استدعِ دالة لوحة ولي الأمر بهذا الكود
+    displayParentDashboard(parentFromLink);
+
+    // إخفاء شاشة الدخول وإظهار شاشة ولي الأمر
+    if (authScreen)   authScreen.classList.add("hidden");
+    if (parentScreen) parentScreen.classList.remove("hidden");
+  }
+});
+
 // ==================================================
 // 4) دوال مساعدة خاصة بالطالب (تخطيط/نسب/دوائر)
 // ==================================================
@@ -446,22 +462,6 @@ function updateStudentCircles(student, hifzPct, murPct) {
 // ==================================================
 // 5) منطق شاشة الحلقة (كود الحلقة)
 // ==================================================
-window.addEventListener("load", () => {
-  const params = new URLSearchParams(window.location.search);
-  const parentFromLink = params.get("p"); // نقرأ ?p=...
-
-  if (parentFromLink) {
-    // هنا ندخل ولي الأمر مباشرة بلوحة ولي الأمر
-    displayParentDashboard(parentFromLink);
-
-    // اخفي صفحة الدخول لو عندك وحدة
-    const loginScreen = document.getElementById("login-screen");
-    const parentDashboard = document.getElementById("parent-dashboard");
-
-    if (loginScreen) loginScreen.style.display = "none";
-    if (parentDashboard) parentDashboard.style.display = "block";
-  }
-});
 
 function updateHalaqaToggleUI() {
   if (!halaqaOnsiteBtn || !halaqaOnlineBtn) return;
