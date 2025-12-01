@@ -246,12 +246,9 @@ window.addEventListener("load", () => {
 
   if (parentFromLink) {
     displayParentDashboard(parentFromLink);
-
-    // إخفاء شاشة الدخول وإظهار شاشة ولي الأمر
-    hideAllScreens();
-    parentScreen?.classList.remove("hidden");
   }
 });
+
 
 
 // ==================================================
@@ -2002,10 +1999,12 @@ async function displayParentDashboard(parentCode) {
 
     const parentKey = String(parentCode || "");
 
+    // أبناء هذا ولي الأمر
     const children = all.filter(
       (s) => String(s.parent_code || "") === parentKey
     );
 
+    // نحسب الرتب حسب نوع الحلقة (نفس منطقك السابق)
     const halaqaBuckets = { ONSITE: [], ONLINE: [] };
     all.forEach((s) => {
       const h = s.halaqa || "ONSITE";
@@ -2023,79 +2022,113 @@ async function displayParentDashboard(parentCode) {
     welcomeParent.textContent = `مرحبًا بك يا ولي الأمر (${parentKey})`;
     parentChildrenList.innerHTML = "";
 
+    // لا يوجد أبناء
     if (!children.length) {
+      hideAllScreens();
+      parentScreen?.classList.remove("hidden");
       parentChildrenList.innerHTML =
         '<p class="message info">لا يوجد أبناء مربوطون بهذا الرمز.</p>';
-    } else {
-      children.forEach((s) => {
-        const h = s.halaqa || "ONSITE";
-        const {
-          buildingRankMap = {},
-          devAdvRankMap = {},
-        } = ranksByHalaqa[h] || {};
-
-        const level = s.murajaa_level || "BUILDING";
-
-        let groupTitle;
-        let childRank = "-";
-
-        if (level === "BUILDING") {
-          groupTitle = "مجموعة البناء (نفس الحلقة)";
-          if (buildingRankMap[s.code] != null) {
-            childRank = String(buildingRankMap[s.code]);
-          }
-        } else {
-          groupTitle = "مجموعة التطوير/المتقدم (نفس الحلقة)";
-          if (devAdvRankMap[s.code] != null) {
-            childRank = String(devAdvRankMap[s.code]);
-          }
-        }
-
-        const startIndex = Number.isFinite(s.hifz_start_id)
-          ? s.hifz_start_id
-          : 0;
-        const endIndex = Number.isFinite(s.hifz_end_id)
-          ? s.hifz_end_id
-          : HIFZ_CURRICULUM.length - 1;
-        const startItem = HIFZ_CURRICULUM[startIndex] || null;
-        const endItem = HIFZ_CURRICULUM[endIndex] || null;
-        const startSurah = startItem
-          ? startItem.surah_name_ar
-          : "غير محددة";
-        const endSurah = endItem ? endItem.surah_name_ar : "غير محددة";
-
-        const hifzPercent = computeHifzPercent(s);
-        let motivation = "🔵 في بداية الطريق";
-        if (hifzPercent >= 75) motivation = "🟢 قارب على إنهاء خطته";
-        else if (hifzPercent >= 30) motivation = "🟡 في منتصف الخطة";
-
-        const hifzMission = getCurrentHifzMission(s);
-        const murMission = getCurrentMurajaaMission(s);
-
-        const halaqaLabel =
-          h === "ONLINE" ? "حلقة إلكترونية" : "حلقة حضوري";
-
-        const el = document.createElement("div");
-        el.className = "child-card";
-        el.innerHTML = `
-          <div class="child-name">${s.name} (${s.code})</div>
-          <div class="child-line"><strong>${halaqaLabel}</strong></div>
-          <div class="child-line">خطة الحفظ: من سورة <strong>${startSurah}</strong> إلى سورة <strong>${endSurah}</strong></div>
-          <div class="child-line">إنجاز الحفظ: <strong>${hifzPercent}%</strong></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${hifzPercent}%"></div></div>
-          <div class="child-line">${motivation}</div>
-          <div class="child-line">مجموع النقاط: <strong>${s.total_points || 0}</strong></div>
-          <div class="child-line">الترتيب داخل ${groupTitle}: <strong>${childRank}</strong></div>
-          <div class="child-line">مهمة الحفظ الحالية: <span>${
-            hifzMission ? hifzMission.description : "لا توجد"
-          }</span></div>
-          <div class="child-line">مهمة المراجعة الحالية: <span>${
-            murMission ? murMission.description : "لا توجد"
-          }</span></div>
-        `;
-        parentChildrenList.appendChild(el);
-      });
+      return;
     }
+
+    // ✅ لو عنده طالب واحد فقط → ندخله مباشرة على صفحة الطالب
+    if (children.length === 1) {
+      const s = children[0];
+      currentUser = { role: "parent", parentCode: parentKey, childCode: s.code };
+
+      hideAllScreens();
+      studentScreen?.classList.remove("hidden");
+      await displayStudentDashboard(s); // نفس الدالة اللي تستخدمها مع الطالب
+      return;
+    }
+
+    // ✅ لو عنده أكثر من طالب → عرض كروت الأبناء في شاشة ولي الأمر
+    hideAllScreens();
+    parentScreen?.classList.remove("hidden");
+
+    children.forEach((s) => {
+      const h = s.halaqa || "ONSITE";
+      const {
+        buildingRankMap = {},
+        devAdvRankMap = {},
+      } = ranksByHalaqa[h] || {};
+
+      const level = s.murajaa_level || "BUILDING";
+
+      let groupTitle;
+      let childRank = "-";
+
+      if (level === "BUILDING") {
+        groupTitle = "مجموعة البناء (نفس الحلقة)";
+        if (buildingRankMap[s.code] != null) {
+          childRank = String(buildingRankMap[s.code]);
+        }
+      } else {
+        groupTitle = "مجموعة التطوير/المتقدم (نفس الحلقة)";
+        if (devAdvRankMap[s.code] != null) {
+          childRank = String(devAdvRankMap[s.code]);
+        }
+      }
+
+      const startIndex = Number.isFinite(s.hifz_start_id)
+        ? s.hifz_start_id
+        : 0;
+      const endIndex = Number.isFinite(s.hifz_end_id)
+        ? s.hifz_end_id
+        : HIFZ_CURRICULUM.length - 1;
+      const startItem = HIFZ_CURRICULUM[startIndex] || null;
+      const endItem = HIFZ_CURRICULUM[endIndex] || null;
+      const startSurah = startItem ? startItem.surah_name_ar : "غير محددة";
+      const endSurah = endItem ? endItem.surah_name_ar : "غير محددة";
+
+      const hifzPercent = computeHifzPercent(s);
+      let motivation = "🔵 في بداية الطريق";
+      if (hifzPercent >= 75) motivation = "🟢 قارب على إنهاء خطته";
+      else if (hifzPercent >= 30) motivation = "🟡 في منتصف الخطة";
+
+      const hifzMission = getCurrentHifzMission(s);
+      const murMission = getCurrentMurajaaMission(s);
+
+      const halaqaLabel =
+        h === "ONLINE" ? "حلقة إلكترونية" : "حلقة حضوري";
+
+      const el = document.createElement("div");
+      el.className = "child-card";
+      el.innerHTML = `
+        <div class="child-name">${s.name} (${s.code})</div>
+        <div class="child-line"><strong>${halaqaLabel}</strong></div>
+        <div class="child-line">خطة الحفظ: من سورة <strong>${startSurah}</strong> إلى سورة <strong>${endSurah}</strong></div>
+        <div class="child-line">إنجاز الحفظ: <strong>${hifzPercent}%</strong></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${hifzPercent}%"></div></div>
+        <div class="child-line">${motivation}</div>
+        <div class="child-line">مجموع النقاط: <strong>${s.total_points || 0}</strong></div>
+        <div class="child-line">الترتيب داخل ${groupTitle}: <strong>${childRank}</strong></div>
+        <div class="child-line">مهمة الحفظ الحالية: <span>${
+          hifzMission ? hifzMission.description : "لا توجد"
+        }</span></div>
+        <div class="child-line">مهمة المراجعة الحالية: <span>${
+          murMission ? murMission.description : "لا توجد"
+        }</span></div>
+        <div class="child-line" style="margin-top:8px;">
+          <button class="button primary child-open-btn">فتح صفحة الطالب</button>
+        </div>
+      `;
+
+      // زر فتح صفحة الطالب
+      const openBtn = el.querySelector(".child-open-btn");
+      openBtn.addEventListener("click", async () => {
+        currentUser = { role: "parent", parentCode: parentKey, childCode: s.code };
+        hideAllScreens();
+        studentScreen?.classList.remove("hidden");
+        await displayStudentDashboard(s);
+      });
+
+      parentChildrenList.appendChild(el);
+    });
+  } catch (e) {
+    console.error("displayParentDashboard error:", e);
+  }
+}
 
     hideAllScreens();
     parentScreen.classList.remove("hidden");
