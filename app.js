@@ -1999,12 +1999,32 @@ async function displayParentDashboard(parentCode) {
 
     const parentKey = String(parentCode || "");
 
-    // أبناء هذا ولي الأمر
     const children = all.filter(
       (s) => String(s.parent_code || "") === parentKey
     );
 
-    // نحسب الرتب حسب نوع الحلقة (نفس منطقك السابق)
+    window.currentParentChildren = children;
+
+    if (!children.length) {
+      hideAllScreens();
+      parentScreen?.classList.remove("hidden");
+      welcomeParent.textContent = `مرحبًا بك يا ولي الأمر (${parentKey})`;
+      parentChildrenList.innerHTML =
+        '<p class="message info">لا يوجد أبناء مربوطون بهذا الرمز.</p>';
+      return;
+    }
+
+    if (children.length === 1) {
+      const onlyChild = children[0];
+      currentUser = {
+        role: "parent",
+        parentCode: parentKey,
+        childCode: onlyChild.code,
+      };
+      await displayStudentDashboard(onlyChild);
+      return;
+    }
+
     const halaqaBuckets = { ONSITE: [], ONLINE: [] };
     all.forEach((s) => {
       const h = s.halaqa || "ONSITE";
@@ -2019,32 +2039,11 @@ async function displayParentDashboard(parentCode) {
       ranksByHalaqa[h] = buildGroupedRanks(arr);
     });
 
-    welcomeParent.textContent = `مرحبًا بك يا ولي الأمر (${parentKey})`;
-    parentChildrenList.innerHTML = "";
-
-    // لا يوجد أبناء
-    if (!children.length) {
-      hideAllScreens();
-      parentScreen?.classList.remove("hidden");
-      parentChildrenList.innerHTML =
-        '<p class="message info">لا يوجد أبناء مربوطون بهذا الرمز.</p>';
-      return;
-    }
-
-    // ✅ لو عنده طالب واحد فقط → ندخله مباشرة على صفحة الطالب
-    if (children.length === 1) {
-      const s = children[0];
-      currentUser = { role: "parent", parentCode: parentKey, childCode: s.code };
-
-      hideAllScreens();
-      studentScreen?.classList.remove("hidden");
-      await displayStudentDashboard(s); // نفس الدالة اللي تستخدمها مع الطالب
-      return;
-    }
-
-    // ✅ لو عنده أكثر من طالب → عرض كروت الأبناء في شاشة ولي الأمر
     hideAllScreens();
     parentScreen?.classList.remove("hidden");
+
+    welcomeParent.textContent = `مرحبًا بك يا ولي الأمر (${parentKey})`;
+    parentChildrenList.innerHTML = "";
 
     children.forEach((s) => {
       const h = s.halaqa || "ONSITE";
@@ -2054,9 +2053,8 @@ async function displayParentDashboard(parentCode) {
       } = ranksByHalaqa[h] || {};
 
       const level = s.murajaa_level || "BUILDING";
-
-      let groupTitle;
       let childRank = "-";
+      let groupTitle = "";
 
       if (level === "BUILDING") {
         groupTitle = "مجموعة البناء (نفس الحلقة)";
@@ -2076,6 +2074,7 @@ async function displayParentDashboard(parentCode) {
       const endIndex = Number.isFinite(s.hifz_end_id)
         ? s.hifz_end_id
         : HIFZ_CURRICULUM.length - 1;
+
       const startItem = HIFZ_CURRICULUM[startIndex] || null;
       const endItem = HIFZ_CURRICULUM[endIndex] || null;
       const startSurah = startItem ? startItem.surah_name_ar : "غير محددة";
@@ -2109,26 +2108,26 @@ async function displayParentDashboard(parentCode) {
         <div class="child-line">مهمة المراجعة الحالية: <span>${
           murMission ? murMission.description : "لا توجد"
         }</span></div>
-        <div class="child-line" style="margin-top:8px;">
-          <button class="button primary child-open-btn">فتح صفحة الطالب</button>
-        </div>
       `;
 
-      // زر فتح صفحة الطالب
-      const openBtn = el.querySelector(".child-open-btn");
-      openBtn.addEventListener("click", async () => {
-        currentUser = { role: "parent", parentCode: parentKey, childCode: s.code };
-        hideAllScreens();
-        studentScreen?.classList.remove("hidden");
+      el.style.cursor = "pointer";
+      el.addEventListener("click", async () => {
+        currentUser = {
+          role: "parent",
+          parentCode: parentKey,
+          childCode: s.code,
+        };
         await displayStudentDashboard(s);
       });
 
       parentChildrenList.appendChild(el);
     });
+
   } catch (e) {
     console.error("displayParentDashboard error:", e);
   }
 }
+
 
     hideAllScreens();
     parentScreen.classList.remove("hidden");
