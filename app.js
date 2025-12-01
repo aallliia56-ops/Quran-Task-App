@@ -111,6 +111,23 @@ function computeRankMapForGroup(students) {
 
   return { sorted, rankMap };
 }
+function showSingleChildExitScreen() {
+  hideAllScreens();
+  singleChildExitScreen?.classList.remove("hidden");
+}
+backToOnlyChildBtn?.addEventListener("click", () => {
+  const kids = window.currentParentChildren || [];
+  if (kids.length === 1) {
+    const s = kids[0];
+    currentUser = {
+      role: "parent",
+      parentCode: s.parent_code,
+      childCode: s.code,
+    };
+    displayStudentDashboard(s);
+  }
+});
+
 
 function buildGroupedRanks(students) {
   const building = [];
@@ -150,6 +167,8 @@ const halaqaOnlineBtn = $("#halaqa-online-btn");
 // ==================================================
 // 3-2) شاشة الطالب
 // ==================================================
+const singleChildExitScreen = $("#single-child-exit-screen");
+const backToOnlyChildBtn   = $("#back-to-only-child-btn");
 
 const studentScreen = $("#student-screen");
 const welcomeStudent = $("#welcome-student");
@@ -2187,25 +2206,32 @@ loginButton.addEventListener("click", async () => {
 });
 
 function logout() {
-  if (
-    currentUser?.role === "student" &&
-    lastStudentEntrySource === "HALAQA" &&
-    lastHalaqaLoginCode &&
-    lastHalaqaType
-  ) {
-    currentUser = null;
-    hideAllScreens();
-    displayHalaqaScreen(lastHalaqaLoginCode, lastHalaqaType);
-    return;
+  // لو المستخدم داخل كولي أمر
+  if (currentUser?.role === "parent") {
+    const kids = window.currentParentChildren || [];
+
+    // لو ولي الأمر عنده أكثر من طالب → يرجع لقائمة الأبناء (صفحة ولي الأمر)
+    if (kids.length > 1) {
+      hideAllScreens();
+      parentScreen?.classList.remove("hidden");
+      return;
+    }
+
+    // لو ولي الأمر عنده طالب واحد → شاشة "تم تسجيل الخروج" مع زر العودة
+    if (kids.length === 1) {
+      hideAllScreens();
+      singleChildExitScreen?.classList.remove("hidden");
+      return;
+    }
   }
 
+  // الحالة الافتراضية (طالب داخل بكوده مباشرة أو معلم أو خروج كامل لولي الأمر)
   currentUser = null;
-  lastStudentEntrySource = null;
+  window.currentParentChildren = [];
   hideAllScreens();
-  authScreen.classList.remove("hidden");
-  userCodeInput.value = "";
-  showMessage(authMessage, "تم تسجيل الخروج بنجاح.", "success");
+  authScreen?.classList.remove("hidden");
 }
+
 
 logoutButtonStudent?.addEventListener("click", logout);
 logoutButtonTeacher?.addEventListener("click", logout);
@@ -2215,18 +2241,24 @@ refreshStudentButton?.addEventListener("click", refreshStudentView);
 refreshTeacherButton?.addEventListener("click", refreshTeacherView);
 
 async function refreshStudentView() {
-  if (!currentUser?.code) {
-    console.warn("No currentUser/code at refresh:", currentUser);
+  const studentCode =
+    currentUser?.role === "parent"
+      ? currentUser.childCode
+      : currentUser?.code;
+
+  if (!studentCode) {
+    console.warn("No studentCode at refresh:", currentUser);
     return;
   }
+
   try {
-    const snap = await getDoc(doc(db, "students", currentUser.code));
+    const snap = await getDoc(doc(db, "students", studentCode));
     if (!snap.exists()) {
       showMessage(authMessage, "تعذر العثور على بيانات الطالب.", "error");
       return;
     }
     await displayStudentDashboard({
-      code: currentUser.code,
+      code: studentCode,
       ...snap.data(),
     });
   } catch (e) {
@@ -2238,6 +2270,7 @@ async function refreshStudentView() {
     );
   }
 }
+
 
 function getActiveTeacherTabId() {
   const active = document.querySelector(".tab-content:not(.hidden)");
