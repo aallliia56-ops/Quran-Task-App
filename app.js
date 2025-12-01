@@ -2129,26 +2129,6 @@ async function displayParentDashboard(parentCode) {
 }
 
 
-    hideAllScreens();
-    parentScreen.classList.remove("hidden");
-
-    const isParentAssistant = all.some(
-      (s) =>
-        s.is_parent_assistant &&
-        String(s.parent_code || "") === parentKey
-    );
-
-    if (isParentAssistant) {
-      await loadAssistantTasksForCurrentUser();
-    } else if (parentAssistantTasksList) {
-      parentAssistantTasksList.innerHTML = "";
-    }
-  } catch (e) {
-    console.error("Error displayParentDashboard:", e);
-    parentChildrenList.innerHTML =
-      `<p class="message error">خطأ في تحميل بيانات الأبناء: ${e.message}</p>`;
-  }
-}
 
 // ==================================================
 // 11) تفعيل تبويبات المعلم + الدخول / الخروج / تحديث
