@@ -1,7 +1,3 @@
-// ==================================================
-// 1) إعدادات Firebase + الثوابت العامة
-// ==================================================
-
 // app.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -450,6 +446,22 @@ function updateStudentCircles(student, hifzPct, murPct) {
 // ==================================================
 // 5) منطق شاشة الحلقة (كود الحلقة)
 // ==================================================
+window.addEventListener("load", () => {
+  const params = new URLSearchParams(window.location.search);
+  const parentFromLink = params.get("p"); // نقرأ ?p=...
+
+  if (parentFromLink) {
+    // هنا ندخل ولي الأمر مباشرة بلوحة ولي الأمر
+    displayParentDashboard(parentFromLink);
+
+    // اخفي صفحة الدخول لو عندك وحدة
+    const loginScreen = document.getElementById("login-screen");
+    const parentDashboard = document.getElementById("parent-dashboard");
+
+    if (loginScreen) loginScreen.style.display = "none";
+    if (parentDashboard) parentDashboard.style.display = "block";
+  }
+});
 
 function updateHalaqaToggleUI() {
   if (!halaqaOnsiteBtn || !halaqaOnlineBtn) return;
