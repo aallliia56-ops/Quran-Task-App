@@ -115,18 +115,6 @@ function showSingleChildExitScreen() {
   hideAllScreens();
   singleChildExitScreen?.classList.remove("hidden");
 }
-backToOnlyChildBtn?.addEventListener("click", () => {
-  const kids = window.currentParentChildren || [];
-  if (kids.length === 1) {
-    const s = kids[0];
-    currentUser = {
-      role: "parent",
-      parentCode: s.parent_code,
-      childCode: s.code,
-    };
-    displayStudentDashboard(s);
-  }
-});
 
 
 function buildGroupedRanks(students) {
@@ -156,6 +144,10 @@ const authScreen = $("#auth-screen");
 const userCodeInput = $("#user-code");
 const loginButton = $("#login-button");
 const authMessage = $("#auth-message");
+// شاشة ولي الأمر عند الخروج (لطالب واحد فقط)
+const singleChildExitScreen = $("#single-child-exit-screen");
+const backToOnlyChildBtn = $("#back-to-only-child-btn");
+
 
 // تبويبات المعلم
 const tabButtons = document.querySelectorAll(".tab-button");
@@ -167,8 +159,6 @@ const halaqaOnlineBtn = $("#halaqa-online-btn");
 // ==================================================
 // 3-2) شاشة الطالب
 // ==================================================
-const singleChildExitScreen = $("#single-child-exit-screen");
-const backToOnlyChildBtn   = $("#back-to-only-child-btn");
 
 const studentScreen = $("#student-screen");
 const welcomeStudent = $("#welcome-student");
@@ -268,6 +258,19 @@ window.addEventListener("load", () => {
   }
 });
 
+backToOnlyChildBtn?.addEventListener("click", () => {
+  const kids = window.currentParentChildren || [];
+  if (kids.length === 1) {
+    const child = kids[0];
+    currentUser = {
+      role: "parent",
+      parentCode: child.parent_code,
+      childCode: child.code,
+    };
+    hideAllScreens();
+    displayStudentDashboard(child);
+  }
+});
 
 
 // ==================================================
