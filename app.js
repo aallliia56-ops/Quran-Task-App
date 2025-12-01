@@ -91,7 +91,9 @@ function hideAllScreens() {
   teacherScreen?.classList.add("hidden");
   parentScreen?.classList.add("hidden");
   halaqaScreen?.classList.add("hidden");
+  singleChildExitScreen?.classList.add("hidden");
 }
+
 
 function computeRankMapForGroup(students) {
   const sorted = [...students].sort(
@@ -2209,18 +2211,18 @@ loginButton.addEventListener("click", async () => {
 });
 
 function logout() {
-  // لو المستخدم داخل كولي أمر
+  // لو المستخدم ولي أمر
   if (currentUser?.role === "parent") {
     const kids = window.currentParentChildren || [];
 
-    // لو ولي الأمر عنده أكثر من طالب → يرجع لقائمة الأبناء (صفحة ولي الأمر)
+    // لو عنده أكثر من طالب → رجوع لصفحة ولي الأمر
     if (kids.length > 1) {
       hideAllScreens();
       parentScreen?.classList.remove("hidden");
       return;
     }
 
-    // لو ولي الأمر عنده طالب واحد → شاشة "تم تسجيل الخروج" مع زر العودة
+    // لو عنده طالب واحد → شاشة تم تسجيل الخروج
     if (kids.length === 1) {
       hideAllScreens();
       singleChildExitScreen?.classList.remove("hidden");
@@ -2228,12 +2230,26 @@ function logout() {
     }
   }
 
-  // الحالة الافتراضية (طالب داخل بكوده مباشرة أو معلم أو خروج كامل لولي الأمر)
+  // باقي الحالات (طالب بحسابه أو معلم)
   currentUser = null;
   window.currentParentChildren = [];
   hideAllScreens();
   authScreen?.classList.remove("hidden");
 }
+backToOnlyChildBtn?.addEventListener("click", () => {
+  const kids = window.currentParentChildren || [];
+  if (kids.length === 1) {
+    const s = kids[0];
+    currentUser = {
+      role: "parent",
+      parentCode: s.parent_code,
+      childCode: s.code,
+    };
+    hideAllScreens();
+    displayStudentDashboard(s);
+  }
+});
+
 
 
 logoutButtonStudent?.addEventListener("click", logout);
@@ -2250,6 +2266,7 @@ async function refreshStudentView() {
       : currentUser?.code;
 
   if (!studentCode) {
+
     console.warn("No studentCode at refresh:", currentUser);
     return;
   }
