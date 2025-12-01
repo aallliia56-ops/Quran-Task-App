@@ -2029,7 +2029,7 @@ async function displayParentDashboard(parentCode) {
       return;
     }
 
-    // لو عنده أكثر من طالب → صفحة ولي الأمر مع قائمة بأسماء الأبناء
+    // لو عنده أكثر من طالب → صفحة ولي الأمر بمربعات مثل الطلاب
     hideAllScreens();
     parentScreen?.classList.remove("hidden");
 
@@ -2037,13 +2037,14 @@ async function displayParentDashboard(parentCode) {
     parentChildrenList.innerHTML = "";
 
     children.forEach((s) => {
-      const btn = document.createElement("button");
-      btn.className = "child-select-btn";
-      btn.textContent = s.name
-        ? `${s.name} (${s.code})`
-        : `طالب برمز (${s.code})`;
+      const tile = document.createElement("div");
+      tile.className = "halaqa-tile";
+      tile.innerHTML = `
+        <div class="halaqa-tile-code">${s.code}</div>
+        <div class="halaqa-tile-line">${s.name || "طالب"}</div>
+      `;
 
-      btn.addEventListener("click", async () => {
+      tile.addEventListener("click", async () => {
         currentUser = {
           role: "parent",
           parentCode: parentKey,
@@ -2052,10 +2053,10 @@ async function displayParentDashboard(parentCode) {
         await displayStudentDashboard(s);
       });
 
-      parentChildrenList.appendChild(btn);
+      parentChildrenList.appendChild(tile);
     });
 
-    // (اختياري) لو عندك منطق "ولي أمر مساعد"
+    // (اختياري) منطق ولي أمر مساعد
     const isParentAssistant = all.some(
       (s) =>
         s.is_parent_assistant &&
@@ -2066,6 +2067,7 @@ async function displayParentDashboard(parentCode) {
     } else if (parentAssistantTasksList) {
       parentAssistantTasksList.innerHTML = "";
     }
+
 
   } catch (e) {
     console.error("displayParentDashboard error:", e);
