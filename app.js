@@ -278,10 +278,24 @@ backToOnlyChildBtn?.addEventListener("click", () => {
 // ==================================================
 // 4) دوال مساعدة خاصة بالطالب (تخطيط/نسب/دوائر)
 // ==================================================
+// ==================================================
+// 4) دوال مساعدة خاصة بالطالب (تخطيط/نسب/دوائر)
+// ==================================================
 
-// =======================================
-// خريطة رقم السورة -> اسم السورة (من منهج الحفظ)
-// =======================================
+// ترتيب السور في منهج الحفظ (أرقام سور فريدة من الناس إلى النبأ)
+const UNIQUE_SURAH_ORDER = (() => {
+  const seen = new Set();
+  const arr = [];
+  HIFZ_CURRICULUM.forEach((seg) => {
+    if (!seen.has(seg.surah_number)) {
+      seen.add(seg.surah_number);
+      arr.push(seg.surah_number);
+    }
+  });
+  return arr;
+})();
+
+// رقم السورة -> اسم السورة من منهج الحفظ
 const SURAH_NAME_BY_NUMBER = (() => {
   const map = {};
   HIFZ_CURRICULUM.forEach((seg) => {
@@ -292,45 +306,23 @@ const SURAH_NAME_BY_NUMBER = (() => {
   return map;
 })();
 
-// خريطة رقم السورة -> أول فهرس في منهج المراجعة يحتوي هذه السورة
-const REVIEW_INDEX_BY_SURAH = (() => {
-  const map = {};
-  const reviewList = REVIEW_CURRICULUM.BUILDING || [];
+// نبحث داخل أسماء مهام المراجعة عن اسم السورة
+function findReviewIndexForSurah(surahNumber) {
+  const sName = SURAH_NAME_BY_NUMBER[surahNumber];
+  if (!sName) return 0;
 
-  reviewList.forEach((item, idx) => {
-    const name = item.name || "";
-    Object.entries(SURAH_NAME_BY_NUMBER).forEach(([num, sName]) => {
-      if (!map[num] && name.includes(sName)) {
-        map[num] = idx;
-      }
-    });
-  });
-
-  return map;
-})();
-
-// ترتيب السور في منهج الحفظ (سور فريدة بالترتيب من الناس إلى النبأ)
-const UNIQUE_SURAH_ORDER = (() => {
-  const seen = new Set();
-  const arr = [];
-  HIFZ_CURRICULUM.forEach((seg) => {
-    if (!seen.has(seg.surah_number)) {
-      seen.add(seg.surah_number);
-      arr.push(seg.surah_number);
+  const arr = REVIEW_CURRICULUM.BUILDING || [];
+  for (let i = 0; i < arr.length; i++) {
+    const name = arr[i].name || "";
+    if (name.includes(sName)) {
+      return i;
     }
-  });
-  return arr; // مثال تقريبي: [114,113,112,...,78]
-})();
+  }
+  return 0;
+}
 
 /**
- * تحسب نقطة الانطلاق الجديدة للمراجعة
- * اعتماداً على آخر ما أنجزه الطالب في الحفظ.
- *
- * المنطق:
- * - نحدد آخر مقطع منجز (قبل hifz_progress).
- * - نأخذ رقم السورة لهذا المقطع.
- * - نتحرك سورة واحدة باتجاه الناس (السورة السابقة في UNIQUE_SURAH_ORDER).
- * - نربط هذه السورة بفهرسها في REVIEW_CURRICULUM.BUILDING.
+ * حساب فهرس بداية المراجعة اعتماداً على آخر ما أنجزه الطالب في الحفظ
  */
 function getReviewStartIndexFromHifz(student) {
   if (!HIFZ_CURRICULUM.length) return 0;
@@ -353,52 +345,47 @@ function getReviewStartIndexFromHifz(student) {
   const prevSurahNumber =
     idxInUnique > 0 ? UNIQUE_SURAH_ORDER[idxInUnique - 1] : lastSurahNumber;
 
-  const key = String(prevSurahNumber);
-  const reviewIndex = REVIEW_INDEX_BY_SURAH[key];
-
-  return Number.isInteger(reviewIndex) ? reviewIndex : 0;
+  return findReviewIndexForSurah(prevSurahNumber);
 }
 
 /**
- * تحسب قيم المراجعة التالية بعد قبول "مهمة مراجعة" واحدة.
- * - لو لسه داخل نفس الدورة → يزيد المؤشر فقط.
- * - لو الدورة اكتملت (رجعنا لنقطة البداية) → نبدأ دورة جديدة
- *   ونحسب murajaa_start_index من الحفظ تلقائياً.
+ * المراجعة التالية بعد قبول مهمة مراجعة واحدة
  */
-function getNextMurajaaProgressAfterAccept(student) {
-  const level = student.murajaa_level || "BUILDING";
+function getNextMurajaaProgressAfterAccept(student, level) {
   const arr = getReviewArrayForLevel(level);
   if (!arr.length) {
     return {
       nextStart: student.murajaa_start_index ?? 0,
       nextIndex: student.murajaa_progress_index ?? 0,
+      newCycle: false,
     };
   }
 
   const len = arr.length;
-  const start = ((student.murajaa_start_index ?? 0) % len + len) % len;
 
-  let idx = student.murajaa_progress_index;
-  if (idx == null) idx = start;
-  idx = ((idx % len) + len) % len;
+  let start = student.murajaa_start_index ?? 0;
+  start = ((start % len) + len) % len;
 
-  const nextIdx = (idx + 1) % len;
+  let cur = student.murajaa_progress_index;
+  if (cur == null) cur = start;
+  cur = ((cur % len) + len) % len;
 
-  // لو رجعنا لبداية الدورة → نعيد ضبط نقطة الانطلاق من منهج الحفظ
-  if (nextIdx === start) {
+  const next = (cur + 1) % len;
+
+  let nextStart = start;
+  let nextIndex = next;
+  let newCycle = false;
+
+  // لو رجعنا لنفس بداية الدورة الحالية
+  if (next === start) {
+    newCycle = true;
     const fromHifz = getReviewStartIndexFromHifz(student);
-    const safeNewStart = ((fromHifz % len) + len) % len;
-    return {
-      nextStart: safeNewStart,
-      nextIndex: safeNewStart,
-    };
+    const safeStart = ((fromHifz % len) + len) % len;
+    nextStart = safeStart;
+    nextIndex = safeStart;
   }
 
-  // لسه داخل نفس الدورة
-  return {
-    nextStart: start,
-    nextIndex: nextIdx,
-  };
+  return { nextStart, nextIndex, newCycle };
 }
 
 
@@ -1777,11 +1764,10 @@ async function reviewTask(studentCode, taskId, action) {
       if (task.type === "hifz") {
         const last = task.mission_last ?? task.mission_start ?? 0;
         student.hifz_progress = last + 1;
-      } else if (task.type === "murajaa") {
+            } else if (task.type === "murajaa") {
         const level =
           student.murajaa_level || task.murajaa_level || "BUILDING";
 
-        // نحسب المراجعة التالية (مع منطق الدورة الجديدة)
         const { nextStart, nextIndex, newCycle } =
           getNextMurajaaProgressAfterAccept(student, level);
 
@@ -1793,6 +1779,9 @@ async function reviewTask(studentCode, taskId, action) {
         student.murajaa_progress_index = nextIndex;
         student.murajaa_cycles = cycles;
       }
+
+
+
 
       tasks[i].status = "completed";
       delete tasks[i].assistant_type;
