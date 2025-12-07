@@ -9,8 +9,6 @@ import {
   getDocs,
   setDoc,
   updateDoc,
-  arrayUnion,
-  writeBatch,
 } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
 import { HIFZ_CURRICULUM, REVIEW_CURRICULUM } from "./curriculum.js";
@@ -35,7 +33,6 @@ const db = getFirestore(app);
 const $ = (s) => document.querySelector(s);
 
 let currentUser = null;
-let editingStudentCode = null;
 
 const HALAQA_LOGIN_CODES = {
   HALAQA_ONSITE: "ONSITE",
@@ -43,10 +40,6 @@ const HALAQA_LOGIN_CODES = {
 };
 
 let currentHalaqa = "ONSITE";
-
-let lastStudentEntrySource = null;
-let lastHalaqaLoginCode = null;
-let lastHalaqaType = null;
 
 const safeSetText = (el, t = "") => el && (el.textContent = t);
 const safeSetWidth = (el, pct = 0) => el && (el.style.width = `${pct}%`);
@@ -94,7 +87,6 @@ function hideAllScreens() {
   singleChildExitScreen?.classList.add("hidden");
 }
 
-
 function computeRankMapForGroup(students) {
   const sorted = [...students].sort(
     (a, b) => (b.total_points || 0) - (a.total_points || 0)
@@ -113,11 +105,6 @@ function computeRankMapForGroup(students) {
 
   return { sorted, rankMap };
 }
-function showSingleChildExitScreen() {
-  hideAllScreens();
-  singleChildExitScreen?.classList.remove("hidden");
-}
-
 
 function buildGroupedRanks(students) {
   const building = [];
@@ -149,7 +136,6 @@ const authMessage = $("#auth-message");
 // شاشة ولي الأمر عند الخروج (لطالب واحد فقط)
 const singleChildExitScreen = $("#single-child-exit-screen");
 const backToOnlyChildBtn = $("#back-to-only-child-btn");
-
 
 // تبويبات المعلم
 const tabButtons = document.querySelectorAll(".tab-button");
@@ -250,7 +236,6 @@ const halaqaSubtitle = $("#halaqa-subtitle");
 const halaqaBackButton = $("#halaqa-back-button");
 const halaqaStudentsGrid = $("#halaqa-students-grid");
 
-
 window.addEventListener("load", () => {
   const params = new URLSearchParams(window.location.search);
   const parentFromLink = params.get("p"); // مثال: ?p=506
@@ -274,10 +259,6 @@ backToOnlyChildBtn?.addEventListener("click", () => {
   }
 });
 
-
-// ==================================================
-// 4) دوال مساعدة خاصة بالطالب (تخطيط/نسب/دوائر)
-// ==================================================
 // ==================================================
 // 4) دوال مساعدة خاصة بالطالب (تخطيط/نسب/دوائر)
 // ==================================================
@@ -388,7 +369,6 @@ function getNextMurajaaProgressAfterAccept(student, level) {
   return { nextStart, nextIndex, newCycle };
 }
 
-
 const getStudentEls = () => ({
   welcome: welcomeStudent,
   hifzLabel: studentHifzProgressLabel,
@@ -468,7 +448,11 @@ function getNextHifzMission(student) {
   const first = all[candidate];
   const segs = [first];
 
-  for (let i = candidate + 1; i < all.length && i <= planEnd && segs.length < maxSegments; i++) {
+  for (
+    let i = candidate + 1;
+    i < all.length && i <= planEnd && segs.length < maxSegments;
+    i++
+  ) {
     const seg = all[i];
     if (seg.surah_number !== first.surah_number) break;
     segs.push(seg);
@@ -564,7 +548,7 @@ function updateStudentCircles(student, hifzPct, murPct) {
 
   // الحفظ: done / total
   const startH = student.hifz_start_id ?? 0;
-  const endH = student.hifz_end_id ?? (HIFZ_CURRICULUM.length - 1);
+  const endH = student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1;
   const spanH = Math.max(1, endH - startH + 1);
   const progH = student.hifz_progress ?? startH;
   const doneH = Math.max(0, Math.min(progH - startH, spanH));
@@ -667,7 +651,6 @@ halaqaStudentsGrid?.addEventListener("click", async (e) => {
       return;
     }
     currentUser = { role: "student", code: student.code };
-    lastStudentEntrySource = "HALAQA";
     await displayStudentDashboard(student);
   } catch (err) {
     console.error("login from halaqa tile error:", err);
@@ -677,7 +660,6 @@ halaqaStudentsGrid?.addEventListener("click", async (e) => {
 
 halaqaBackButton?.addEventListener("click", () => {
   currentUser = null;
-  lastStudentEntrySource = null;
   hideAllScreens();
   authScreen.classList.remove("hidden");
   userCodeInput.value = "";
@@ -689,8 +671,10 @@ halaqaBackButton?.addEventListener("click", () => {
 
 function activateStudentTab() {
   // دائماً نظهر صفحة المهام فقط
-  if (studentMainTasksSection) studentMainTasksSection.classList.remove("hidden");
-  if (studentAssistantTabSection) studentAssistantTabSection.classList.add("hidden");
+  if (studentMainTasksSection)
+    studentMainTasksSection.classList.remove("hidden");
+  if (studentAssistantTabSection)
+    studentAssistantTabSection.classList.add("hidden");
 
   const progressSection = document.querySelector(".progress-section");
   if (progressSection) progressSection.classList.remove("hidden");
@@ -716,14 +700,13 @@ async function displayStudentDashboard(student) {
 
     // ✅ إظهار/إخفاء بطاقات الحفظ والمراجعة حسب الإيقاف
     const hifzCard = document.getElementById("hifz-circle-card");
-    const murCard  = document.getElementById("mur-circle-card");
+    const murCard = document.getElementById("mur-circle-card");
 
     if (hifzCard) hifzCard.classList.toggle("hidden", !!student.pause_hifz);
-    if (murCard)  murCard.classList.toggle("hidden", !!student.pause_murajaa);
+    if (murCard) murCard.classList.toggle("hidden", !!student.pause_murajaa);
 
     // ✅ حدّث الدوائر العلوية
     updateStudentCircles(student, hifzPct, murPct);
-
 
     const els = getStudentEls();
 
@@ -1727,7 +1710,9 @@ async function loadHonorBoard() {
     };
 
     container.appendChild(makeSection("مستوى البناء", topBuilding));
-    container.appendChild(makeSection("مستوى التطوير / المتقدم", topDevAdv));
+    container.appendChild(
+      makeSection("مستوى التطوير / المتقدم", topDevAdv)
+    );
 
     honorBoardDiv.innerHTML = "";
     honorBoardDiv.appendChild(container);
@@ -1764,7 +1749,7 @@ async function reviewTask(studentCode, taskId, action) {
       if (task.type === "hifz") {
         const last = task.mission_last ?? task.mission_start ?? 0;
         student.hifz_progress = last + 1;
-            } else if (task.type === "murajaa") {
+      } else if (task.type === "murajaa") {
         const level =
           student.murajaa_level || task.murajaa_level || "BUILDING";
 
@@ -1779,9 +1764,6 @@ async function reviewTask(studentCode, taskId, action) {
         student.murajaa_progress_index = nextIndex;
         student.murajaa_cycles = cycles;
       }
-
-
-
 
       tasks[i].status = "completed";
       delete tasks[i].assistant_type;
@@ -1962,13 +1944,13 @@ async function toggleStudentFlag(code, fieldName) {
 
     let msg = "";
     if (fieldName === "pause_hifz") {
-      msg = !current ? "تم إيقاف مهام الحفظ لهذا الطالب." : "تم تشغيل مهام الحفظ لهذا الطالب.";
-    } else if (fieldName === "pause_murajaa") {
-      msg = !current ? "تم إيقاف مهام المراجعة لهذا الطالب." : "تم تشغيل مهام المراجعة لهذا الطالب.";
-    } else if (fieldName === "is_student_assistant") {
       msg = !current
-        ? "تم تفعيل هذا الطالب كمساعد."
-        : "تم إلغاء تفعيل هذا الطالب كمساعد.";
+        ? "تم إيقاف مهام الحفظ لهذا الطالب."
+        : "تم تشغيل مهام الحفظ لهذا الطالب.";
+    } else if (fieldName === "pause_murajaa") {
+      msg = !current
+        ? "تم إيقاف مهام المراجعة لهذا الطالب."
+        : "تم تشغيل مهام المراجعة لهذا الطالب.";
     } else if (fieldName === "is_parent_assistant") {
       msg = !current
         ? "تم تفعيل ولي الأمر كمساعد في هذه الحلقة."
@@ -1991,7 +1973,6 @@ async function loadStudentIntoForm(code) {
     if (!snap.exists()) return;
     const s = snap.data();
 
-    editingStudentCode = s.code;
     studentFormTitle.textContent = `تعديل بيانات الطالب: ${s.name}`;
 
     if (!newStudentHifzStart.options.length || !newStudentHifzEnd.options.length)
@@ -2078,13 +2059,11 @@ registerStudentButton?.addEventListener("click", async () => {
       tasks: existing ? existing.tasks || [] : [],
       pause_hifz: existing ? !!existing.pause_hifz : false,
       pause_murajaa: existing ? !!existing.pause_murajaa : false,
-      is_student_assistant: existing ? !!existing.is_student_assistant : false,
       is_parent_assistant: existing ? !!existing.is_parent_assistant : false,
     };
 
     await setDoc(studentRef, baseData, { merge: true });
     showMessage(registerStudentMessage, "تم حفظ بيانات الطالب.", "success");
-    editingStudentCode = null;
     studentFormTitle.textContent = "إضافة / تعديل طالب";
 
     await loadStudentsForTeacher();
@@ -2196,15 +2175,10 @@ async function displayParentDashboard(parentCode) {
     } else if (parentAssistantTasksList) {
       parentAssistantTasksList.innerHTML = "";
     }
-
-
   } catch (e) {
     console.error("displayParentDashboard error:", e);
   }
 }
-
-
-
 
 // ==================================================
 // 11) تفعيل تبويبات المعلم + الدخول / الخروج / تحديث
@@ -2265,16 +2239,12 @@ loginButton.addEventListener("click", async () => {
   try {
     if (HALAQA_LOGIN_CODES[codeUpper]) {
       currentHalaqa = HALAQA_LOGIN_CODES[codeUpper];
-      lastHalaqaLoginCode = codeUpper;
-      lastHalaqaType = currentHalaqa;
-      lastStudentEntrySource = null;
       await displayHalaqaScreen(codeUpper, currentHalaqa);
       return;
     }
 
     if (rawCode === "teacher1") {
       currentUser = { role: "teacher", code: rawCode };
-      lastStudentEntrySource = null;
       hideAllScreens();
       teacherScreen.classList.remove("hidden");
       await refreshTeacherView?.();
@@ -2292,7 +2262,6 @@ loginButton.addEventListener("click", async () => {
 
     if (parentHasChildren) {
       currentUser = { role: "parent", code: String(rawCode) };
-      lastStudentEntrySource = null;
       await displayParentDashboard(rawCode);
       return;
     }
@@ -2307,7 +2276,6 @@ loginButton.addEventListener("click", async () => {
       return;
     }
     currentUser = { role: "student", code: student.code };
-    lastStudentEntrySource = "DIRECT";
     await displayStudentDashboard(student);
   } catch (e) {
     console.error("login error:", e);
@@ -2341,21 +2309,6 @@ function logout() {
   hideAllScreens();
   authScreen?.classList.remove("hidden");
 }
-backToOnlyChildBtn?.addEventListener("click", () => {
-  const kids = window.currentParentChildren || [];
-  if (kids.length === 1) {
-    const s = kids[0];
-    currentUser = {
-      role: "parent",
-      parentCode: s.parent_code,
-      childCode: s.code,
-    };
-    hideAllScreens();
-    displayStudentDashboard(s);
-  }
-});
-
-
 
 logoutButtonStudent?.addEventListener("click", logout);
 logoutButtonTeacher?.addEventListener("click", logout);
@@ -2371,7 +2324,6 @@ async function refreshStudentView() {
       : currentUser?.code;
 
   if (!studentCode) {
-
     console.warn("No studentCode at refresh:", currentUser);
     return;
   }
@@ -2395,7 +2347,6 @@ async function refreshStudentView() {
     );
   }
 }
-
 
 function getActiveTeacherTabId() {
   const active = document.querySelector(".tab-content:not(.hidden)");
