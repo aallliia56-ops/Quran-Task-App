@@ -33,6 +33,7 @@ const db = getFirestore(app);
 const $ = (s) => document.querySelector(s);
 
 let currentUser = null;
+let editingStudentCode = null;
 
 const HALAQA_LOGIN_CODES = {
   HALAQA_ONSITE: "ONSITE",
@@ -40,6 +41,10 @@ const HALAQA_LOGIN_CODES = {
 };
 
 let currentHalaqa = "ONSITE";
+
+let lastStudentEntrySource = null;
+let lastHalaqaLoginCode = null;
+let lastHalaqaType = null;
 
 const safeSetText = (el, t = "") => el && (el.textContent = t);
 const safeSetWidth = (el, pct = 0) => el && (el.style.width = `${pct}%`);
@@ -106,6 +111,11 @@ function computeRankMapForGroup(students) {
   return { sorted, rankMap };
 }
 
+function showSingleChildExitScreen() {
+  hideAllScreens();
+  singleChildExitScreen?.classList.remove("hidden");
+}
+
 function buildGroupedRanks(students) {
   const building = [];
   const devAdv = [];
@@ -133,6 +143,7 @@ const authScreen = $("#auth-screen");
 const userCodeInput = $("#user-code");
 const loginButton = $("#login-button");
 const authMessage = $("#auth-message");
+
 // شاشة ولي الأمر عند الخروج (لطالب واحد فقط)
 const singleChildExitScreen = $("#single-child-exit-screen");
 const backToOnlyChildBtn = $("#back-to-only-child-btn");
@@ -209,6 +220,10 @@ const newStudentMurajaaStart = $("#new-student-murajaa-start");
 const newStudentHalaqa = $("#new-student-halaqa");
 const registerStudentButton = $("#register-student-button");
 const registerStudentMessage = $("#register-student-message");
+
+// ✅ الحقول الجديدة لنقطة انطلاق الحفظ والمراجعة
+const studentHifzProgressInput = $("#student-hifz-progress");
+const studentMurajaaProgressInput = $("#student-murajaa-progress");
 
 const hifzCurriculumDisplay = $("#hifz-curriculum-display");
 const murajaaCurriculumDisplay = $("#murajaa-curriculum-display");
@@ -309,7 +324,7 @@ function getReviewStartIndexFromHifz(student) {
   if (!HIFZ_CURRICULUM.length) return 0;
 
   const startId = student.hifz_start_id ?? 0;
-  const endId = student.hifz_end_id ?? (HIFZ_CURRICULUM.length - 1);
+  const endId = student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1;
 
   const rawProg = student.hifz_progress ?? startId;
   const clampedProg = Math.min(Math.max(rawProg, startId), endId + 1);
@@ -651,6 +666,7 @@ halaqaStudentsGrid?.addEventListener("click", async (e) => {
       return;
     }
     currentUser = { role: "student", code: student.code };
+    lastStudentEntrySource = "HALAQA";
     await displayStudentDashboard(student);
   } catch (err) {
     console.error("login from halaqa tile error:", err);
@@ -660,6 +676,7 @@ halaqaStudentsGrid?.addEventListener("click", async (e) => {
 
 halaqaBackButton?.addEventListener("click", () => {
   currentUser = null;
+  lastStudentEntrySource = null;
   hideAllScreens();
   authScreen.classList.remove("hidden");
   userCodeInput.value = "";
@@ -671,10 +688,8 @@ halaqaBackButton?.addEventListener("click", () => {
 
 function activateStudentTab() {
   // دائماً نظهر صفحة المهام فقط
-  if (studentMainTasksSection)
-    studentMainTasksSection.classList.remove("hidden");
-  if (studentAssistantTabSection)
-    studentAssistantTabSection.classList.add("hidden");
+  if (studentMainTasksSection) studentMainTasksSection.classList.remove("hidden");
+  if (studentAssistantTabSection) studentAssistantTabSection.classList.add("hidden");
 
   const progressSection = document.querySelector(".progress-section");
   if (progressSection) progressSection.classList.remove("hidden");
@@ -1710,9 +1725,7 @@ async function loadHonorBoard() {
     };
 
     container.appendChild(makeSection("مستوى البناء", topBuilding));
-    container.appendChild(
-      makeSection("مستوى التطوير / المتقدم", topDevAdv)
-    );
+    container.appendChild(makeSection("مستوى التطوير / المتقدم", topDevAdv));
 
     honorBoardDiv.innerHTML = "";
     honorBoardDiv.appendChild(container);
@@ -1824,8 +1837,14 @@ function populateHifzSelects() {
     (item, i) =>
       `<option value="${i}">(${i}) ${item.surah_name_ar} (${item.start_ayah}-${item.end_ayah})</option>`
   ).join("");
+
   newStudentHifzStart.innerHTML = options;
   newStudentHifzEnd.innerHTML = options;
+
+  // ✅ نفس الخيارات لنقطة انطلاق الحفظ
+  if (studentHifzProgressInput) {
+    studentHifzProgressInput.innerHTML = options;
+  }
 }
 
 function populateMurajaaStartSelect() {
@@ -1834,11 +1853,23 @@ function populateMurajaaStartSelect() {
   if (!arr?.length) {
     newStudentMurajaaStart.innerHTML =
       '<option value="0">لا توجد مهام لهذا المستوى</option>';
+    if (studentMurajaaProgressInput) {
+      studentMurajaaProgressInput.innerHTML =
+        '<option value="0">لا توجد مهام</option>';
+    }
     return;
   }
-  newStudentMurajaaStart.innerHTML = arr
+
+  const html = arr
     .map((it, i) => `<option value="${i}">(${i}) ${it.name}</option>`)
     .join("");
+
+  newStudentMurajaaStart.innerHTML = html;
+
+  // ✅ نفس الخيارات لنقطة انطلاق المراجعة
+  if (studentMurajaaProgressInput) {
+    studentMurajaaProgressInput.innerHTML = html;
+  }
 }
 
 newStudentMurajaaLevel?.addEventListener("change", populateMurajaaStartSelect);
@@ -1951,6 +1982,10 @@ async function toggleStudentFlag(code, fieldName) {
       msg = !current
         ? "تم إيقاف مهام المراجعة لهذا الطالب."
         : "تم تشغيل مهام المراجعة لهذا الطالب.";
+    } else if (fieldName === "is_student_assistant") {
+      msg = !current
+        ? "تم تفعيل هذا الطالب كمساعد."
+        : "تم إلغاء تفعيل هذا الطالب كمساعد.";
     } else if (fieldName === "is_parent_assistant") {
       msg = !current
         ? "تم تفعيل ولي الأمر كمساعد في هذه الحلقة."
@@ -1973,9 +2008,13 @@ async function loadStudentIntoForm(code) {
     if (!snap.exists()) return;
     const s = snap.data();
 
+    editingStudentCode = s.code;
     studentFormTitle.textContent = `تعديل بيانات الطالب: ${s.name}`;
 
-    if (!newStudentHifzStart.options.length || !newStudentHifzEnd.options.length)
+    if (
+      !newStudentHifzStart.options.length ||
+      !newStudentHifzEnd.options.length
+    )
       populateHifzSelects();
 
     newStudentCodeInput.value = s.code;
@@ -1990,10 +2029,23 @@ async function loadStudentIntoForm(code) {
     newStudentMurajaaLevel.value = s.murajaa_level || "BUILDING";
     populateMurajaaStartSelect();
     const arr = getReviewArrayForLevel(newStudentMurajaaLevel.value);
-    const def = s.murajaa_start_index ?? s.murajaa_progress_index ?? 0;
+    const defStart = s.murajaa_start_index ?? s.murajaa_progress_index ?? 0;
     newStudentMurajaaStart.value = (
-      arr?.length ? Math.min(def, arr.length - 1) : 0
+      arr?.length ? Math.min(defStart, arr.length - 1) : 0
     ).toString();
+
+    // ✅ تعبئة نقطة انطلاق الحفظ
+    if (studentHifzProgressInput) {
+      const progH = s.hifz_progress ?? s.hifz_start_id ?? 0;
+      studentHifzProgressInput.value = String(progH);
+    }
+
+    // ✅ تعبئة نقطة انطلاق المراجعة
+    if (studentMurajaaProgressInput) {
+      const progM = s.murajaa_progress_index ?? s.murajaa_start_index ?? 0;
+      const safeProg = arr?.length ? Math.min(progM, arr.length - 1) : 0;
+      studentMurajaaProgressInput.value = String(safeProg);
+    }
 
     if (newStudentHalaqa) newStudentHalaqa.value = s.halaqa || "ONSITE";
 
@@ -2015,6 +2067,16 @@ registerStudentButton?.addEventListener("click", async () => {
   const murajaaLevel = newStudentMurajaaLevel.value;
   const murajaaStartIndex = parseInt(newStudentMurajaaStart.value, 10) || 0;
   const halaqaValue = newStudentHalaqa?.value || "ONSITE";
+
+  // ✅ القيم المدخلة لنقطة انطلاق الحفظ والمراجعة
+  const hifzProgressIndex = parseInt(
+    studentHifzProgressInput?.value ?? "",
+    10
+  );
+  const murajaaProgressIndex = parseInt(
+    studentMurajaaProgressInput?.value ?? "",
+    10
+  );
 
   if (!code || !name || isNaN(hifzStartIndex) || isNaN(hifzEndIndex)) {
     showMessage(
@@ -2047,23 +2109,41 @@ registerStudentButton?.addEventListener("click", async () => {
       parent_code: parentCode,
       hifz_start_id: hifzStartIndex,
       hifz_end_id: hifzEndIndex,
+
+      // ✅ لو فيه قيمة مدخلة للحفظ نأخذها، غير كذا نرجع للقديم أو للبداية
       hifz_progress: existing
-        ? existing.hifz_progress ?? hifzStartIndex
-        : hifzStartIndex,
+        ? isNaN(hifzProgressIndex)
+          ? existing.hifz_progress ?? hifzStartIndex
+          : hifzProgressIndex
+        : isNaN(hifzProgressIndex)
+        ? hifzStartIndex
+        : hifzProgressIndex,
+
       hifz_level: hifzLevel,
       murajaa_level: murajaaLevel,
       murajaa_start_index: murajaaStartIndex,
-      murajaa_progress_index: murajaaStartIndex,
+
+      // ✅ نفس الفكرة لنقطة انطلاق المراجعة
+      murajaa_progress_index: existing
+        ? isNaN(murajaaProgressIndex)
+          ? existing.murajaa_progress_index ?? murajaaStartIndex
+          : murajaaProgressIndex
+        : isNaN(murajaaProgressIndex)
+        ? murajaaStartIndex
+        : murajaaProgressIndex,
+
       murajaa_cycles: existing ? existing.murajaa_cycles || 0 : 0,
       total_points: existing ? existing.total_points || 0 : 0,
       tasks: existing ? existing.tasks || [] : [],
       pause_hifz: existing ? !!existing.pause_hifz : false,
       pause_murajaa: existing ? !!existing.pause_murajaa : false,
+      is_student_assistant: existing ? !!existing.is_student_assistant : false,
       is_parent_assistant: existing ? !!existing.is_parent_assistant : false,
     };
 
     await setDoc(studentRef, baseData, { merge: true });
     showMessage(registerStudentMessage, "تم حفظ بيانات الطالب.", "success");
+    editingStudentCode = null;
     studentFormTitle.textContent = "إضافة / تعديل طالب";
 
     await loadStudentsForTeacher();
@@ -2239,12 +2319,16 @@ loginButton.addEventListener("click", async () => {
   try {
     if (HALAQA_LOGIN_CODES[codeUpper]) {
       currentHalaqa = HALAQA_LOGIN_CODES[codeUpper];
+      lastHalaqaLoginCode = codeUpper;
+      lastHalaqaType = currentHalaqa;
+      lastStudentEntrySource = null;
       await displayHalaqaScreen(codeUpper, currentHalaqa);
       return;
     }
 
     if (rawCode === "teacher1") {
       currentUser = { role: "teacher", code: rawCode };
+      lastStudentEntrySource = null;
       hideAllScreens();
       teacherScreen.classList.remove("hidden");
       await refreshTeacherView?.();
@@ -2262,6 +2346,7 @@ loginButton.addEventListener("click", async () => {
 
     if (parentHasChildren) {
       currentUser = { role: "parent", code: String(rawCode) };
+      lastStudentEntrySource = null;
       await displayParentDashboard(rawCode);
       return;
     }
@@ -2276,6 +2361,7 @@ loginButton.addEventListener("click", async () => {
       return;
     }
     currentUser = { role: "student", code: student.code };
+    lastStudentEntrySource = "DIRECT";
     await displayStudentDashboard(student);
   } catch (e) {
     console.error("login error:", e);
