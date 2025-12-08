@@ -2447,7 +2447,7 @@ tabButtons.forEach((btn) =>
   btn.addEventListener("click", () => activateTab(btn.dataset.tab))
 );
 
-loginButton.addEventListener("click", async () => {
+loginButton?.addEventListener("click", async () => {
   const rawCode = userCodeInput.value.trim();
   const codeUpper = rawCode.toUpperCase();
 
