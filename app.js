@@ -90,7 +90,9 @@ function hideAllScreens() {
   parentScreen?.classList.add("hidden");
   halaqaScreen?.classList.add("hidden");
   singleChildExitScreen?.classList.add("hidden");
+  studentExitScreen?.classList.add("hidden"); // ✅ إضافة مهمّة
 }
+
 
 function computeRankMapForGroup(students) {
   const sorted = [...students].sort(
