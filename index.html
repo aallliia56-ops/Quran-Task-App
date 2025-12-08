@@ -218,7 +218,7 @@
   </div>
 
 
-  <!-- شاشة الطالب -->
+    <!-- شاشة الطالب -->
   <div id="student-screen" class="container hidden">
     <header class="dashboard-header">
       <div>
@@ -237,35 +237,8 @@
       </div>
     </header>
 
-    <!-- تبويبات الطالب (مخفية حالياً لكن موجودة للكود) -->
-    <nav class="student-tabs">
-      <button
-        class="student-tab-button"
-        data-tab="student-main-tasks"
-      >
-        مهامي الحالية
-      </button>
-      <button
-        class="student-tab-button"
-        data-tab="student-assistant-tab"
-      >
-        مهام المساعد
-      </button>
-    </nav>
-      <!-- شاشة الطالب -->
-  <div id="student-screen" class="container hidden">
-    <header class="dashboard-header">
-      ...
-    </header>
-
     <!-- ✅ مخطط الالتزام الأسبوعي (الأحد - الخميس) -->
     <section id="student-weekly-log" class="weekly-log"></section>
-
-    <!-- 🔵 بطاقات الدوائر (الحفظ / المراجعة) -->
-    <section class="progress-section">
-      ...
-    </section>
-
 
     <!-- 🔵 بطاقات الدوائر (الحفظ / المراجعة) -->
     <section class="progress-section">
@@ -307,6 +280,22 @@
         </div>
       </div>
     </section>
+
+    <!-- تبويبات الطالب (مخفية حالياً لكن موجودة للكود) -->
+    <nav class="student-tabs">
+      <button
+        class="student-tab-button"
+        data-tab="student-main-tasks"
+      >
+        مهامي الحالية
+      </button>
+      <button
+        class="student-tab-button"
+        data-tab="student-assistant-tab"
+      >
+        مهام المساعد
+      </button>
+    </nav>
 
     <!-- تبويب: مهامي الحالية -->
     <section id="student-main-tasks" class="tasks-section">
@@ -631,16 +620,6 @@
     العودة إلى صفحة الطالب
   </button>
 </div>
-
-
-  <!-- منطق التطبيق -->
-  <script type="module" src="app.js"></script>
-  <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js");
-  }
-</script>
-
   <!-- شاشة خروج الطالب -->
 <div id="student-exit-screen" class="container hidden">
   <h2>تم تسجيل الخروج</h2>
@@ -649,6 +628,14 @@
     العودة لصفحة الطالب
   </button>
 </div>
+
+  <!-- منطق التطبيق -->
+  <script type="module" src="app.js"></script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
 
 
   
