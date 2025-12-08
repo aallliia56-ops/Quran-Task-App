@@ -2386,8 +2386,10 @@ loginButton.addEventListener("click", async () => {
 });
 
 backToStudentBtn?.addEventListener("click", async () => {
+  // أخفي كل الشاشات قبل ما أفتح شاشة الطالب
+  hideAllScreens();
+
   if (!currentUser?.code) {
-    hideAllScreens();
     authScreen.classList.remove("hidden");
     return;
   }
@@ -2395,18 +2397,20 @@ backToStudentBtn?.addEventListener("click", async () => {
   try {
     const snap = await getDoc(doc(db, "students", currentUser.code));
     if (snap.exists()) {
-      hideAllScreens();
       displayStudentDashboard({
         code: currentUser.code,
-        ...snap.data()
+        ...snap.data(),
       });
+    } else {
+      // لو ما حصل الطالب يرجع لواجهة الدخول
+      authScreen.classList.remove("hidden");
     }
   } catch (e) {
     console.error("Error loading student after logout:", e);
-    hideAllScreens();
     authScreen.classList.remove("hidden");
   }
 });
+
 
 
 function logout() {
