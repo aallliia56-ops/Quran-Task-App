@@ -190,6 +190,10 @@ const studentMainTasksSection = $("#student-main-tasks");
 const studentAssistantTabSection = $("#student-assistant-tab");
 const studentTabButtons = document.querySelectorAll(".student-tab-button");
 
+const studentExitScreen = $("#student-exit-screen");
+const backToStudentBtn = $("#back-to-student-btn");
+
+
 // ==================================================
 // 3-3) شاشة المعلم
 // ==================================================
@@ -2381,32 +2385,52 @@ loginButton.addEventListener("click", async () => {
   }
 });
 
-function logout() {
-  // لو المستخدم ولي أمر
-  if (currentUser?.role === "parent") {
-    const kids = window.currentParentChildren || [];
-
-    // لو عنده أكثر من طالب → رجوع لصفحة ولي الأمر
-    if (kids.length > 1) {
-      hideAllScreens();
-      parentScreen?.classList.remove("hidden");
-      return;
-    }
-
-    // لو عنده طالب واحد → شاشة تم تسجيل الخروج
-    if (kids.length === 1) {
-      hideAllScreens();
-      singleChildExitScreen?.classList.remove("hidden");
-      return;
-    }
+backToStudentBtn?.addEventListener("click", async () => {
+  if (!currentUser?.code) {
+    hideAllScreens();
+    authScreen.classList.remove("hidden");
+    return;
   }
 
-  // باقي الحالات (طالب بحسابه أو معلم)
+  try {
+    const snap = await getDoc(doc(db, "students", currentUser.code));
+    if (snap.exists()) {
+      hideAllScreens();
+      displayStudentDashboard({
+        code: currentUser.code,
+        ...snap.data()
+      });
+    }
+  } catch (e) {
+    console.error("Error loading student after logout:", e);
+    hideAllScreens();
+    authScreen.classList.remove("hidden");
+  }
+});
+
+
+function logout() {
+
+  // خروج الطالب
+  if (currentUser?.role === "student") {
+    hideAllScreens();
+    studentExitScreen?.classList.remove("hidden");
+    return;
+  }
+
+  // خروج ولي الأمر لطالب واحد
+  if (currentUser?.role === "parent" && window.currentParentChildren?.length === 1) {
+    hideAllScreens();
+    singleChildExitScreen?.classList.remove("hidden");
+    return;
+  }
+
+  // باقي الحالات → رجوع طبيعي لشاشة الدخول
   currentUser = null;
-  window.currentParentChildren = [];
   hideAllScreens();
   authScreen?.classList.remove("hidden");
 }
+
 
 logoutButtonStudent?.addEventListener("click", logout);
 logoutButtonTeacher?.addEventListener("click", logout);
