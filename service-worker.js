@@ -1,4 +1,4 @@
-const CACHE_NAME = "halaqa-v2"; // غيّر الرقم كل ما رفعت نسخة جديدة
+const CACHE_NAME = "halaqa-v3"; // غيّر الرقم كل ما رفعت نسخة جديدة
 const URLS_TO_CACHE = ["./", "./index.html"];
 
 // وقت التثبيت: نحفظ الملفات الأساسية ونفعل الـ SW مباشرة
@@ -24,15 +24,21 @@ self.addEventListener("activate", (event) => {
 
 // استراتيجية: الشبكة أولاً، ولو ما فيه نت نرجع للكاش
 self.addEventListener("fetch", (event) => {
+  // ✅ لا نتدخل في أي طلب مو GET (مثل POST للـ Firebase)
+  if (event.request.method !== "GET") {
+    return; // يروح مباشرة للنت بدون كاش
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // نخزن نسخة في الكاش
+        // نخزن نسخة في الكاش (GET فقط)
         const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, clone);
+        });
         return response;
       })
       .catch(() => caches.match(event.request))
   );
 });
-
