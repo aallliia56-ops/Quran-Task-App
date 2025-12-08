@@ -113,6 +113,66 @@ function computeRankMapForGroup(students) {
   return { sorted, rankMap };
 }
 
+// ✅ بداية أسبوع الحالي (من الأحد)
+function getCurrentWeekStartDate() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay(); // 0: أحد, 1: اثنين, ... 6: سبت في بعض البيئات 0 = Sunday
+  const diffFromSunday = day; // لو الأحد 0، الاثنين 1 .. الخ
+  d.setDate(d.getDate() - diffFromSunday);
+  return d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+// ✅ مفتاح اليوم (نستخدم فقط الأحد إلى الخميس)
+function getTodayWeekdayKey() {
+  const day = new Date().getDay(); // 0 Sunday .. 6 Saturday
+  switch (day) {
+    case 0: return "SUN"; // أحد
+    case 1: return "MON"; // اثنين
+    case 2: return "TUE"; // ثلاثاء
+    case 3: return "WED"; // أربعاء
+    case 4: return "THU"; // خميس
+    default:
+      return null; // الجمعة والسبت لا تدخل في المخطط
+  }
+}
+// ✅ تجهيز بيانات الأسبوع للطالب بعد إنجاز مهمة (حفظ أو مراجعة)
+function computeUpdatedWeekLog(student) {
+  const currentWeekStart = getCurrentWeekStartDate();
+  const todayKey = getTodayWeekdayKey();
+
+  // لو اليوم جمعة/سبت → ما نسجل شيء
+  if (!todayKey) {
+    return {
+      week_start: student.week_start || currentWeekStart,
+      week_log: student.week_log || {},
+    };
+  }
+
+  // البداية الافتراضية: كل الأيام X
+  let baseLog = {
+    SUN: false,
+    MON: false,
+    TUE: false,
+    WED: false,
+    THU: false,
+  };
+
+  // لو نفس الأسبوع السابق → نكمل على نفس السجّل
+  if (student.week_start === currentWeekStart && student.week_log) {
+    baseLog = { ...baseLog, ...student.week_log };
+  }
+
+  // نعلِّم اليوم الحالي ✅
+  baseLog[todayKey] = true;
+
+  return {
+    week_start: currentWeekStart,
+    week_log: baseLog,
+  };
+}
+
+
 function showSingleChildExitScreen() {
   hideAllScreens();
   singleChildExitScreen?.classList.remove("hidden");
@@ -730,6 +790,9 @@ async function displayStudentDashboard(student) {
     // ✅ احسب النِّسَب في الأول
     const hifzPct = computeHifzPercent(student);
     const murPct = computeMurajaaPercent(student);
+    
+    // ✅ حدّث مخطط الالتزام الأسبوعي
+    renderWeeklyLog(student);
 
     // ✅ إظهار/إخفاء بطاقات الحفظ والمراجعة حسب الإيقاف
     const hifzCard = document.getElementById("hifz-circle-card");
@@ -841,6 +904,43 @@ async function displayStudentDashboard(student) {
     );
   }
 }
+
+function renderWeeklyLog(student) {
+  const container = document.getElementById("student-weekly-log");
+  if (!container) return;
+
+  const currentWeekStart = getCurrentWeekStartDate();
+  const sameWeek = student.week_start === currentWeekStart;
+  const weekLog = sameWeek && student.week_log ? student.week_log : {};
+
+  const days = [
+    { key: "SUN", label: "أحد" },
+    { key: "MON", label: "اثنين" },
+    { key: "TUE", label: "ثلاثاء" },
+    { key: "WED", label: "أربعاء" },
+    { key: "THU", label: "خميس" },
+  ];
+
+  container.innerHTML = `
+    <h3 class="weekly-log-title">التزامي هذا الأسبوع</h3>
+    <div class="weekly-row">
+      ${days
+        .map((d) => {
+          const done = !!weekLog[d.key];
+          const mark = done ? "✓" : "✗";
+          const statusClass = done ? "day-done" : "day-missed";
+          return `
+            <div class="weekly-day ${statusClass}">
+              <div class="weekly-day-name">${d.label}</div>
+              <div class="weekly-day-status">${mark}</div>
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
 
 function renderStudentTasks(student) {
   studentTasksDiv.innerHTML = "";
@@ -1176,14 +1276,25 @@ async function submitCurriculumTask(studentCode, mission) {
       created_at: Date.now(),
     });
 
-    await updateDoc(studentRef, { tasks });
-    await displayStudentDashboard({ code: studentCode, ...student, tasks });
+    // ✅ حدّث سجل الأسبوع
+    const weekData = computeUpdatedWeekLog(student);
+
+    await updateDoc(studentRef, { tasks, ...weekData });
+
+    await displayStudentDashboard({
+      code: studentCode,
+      ...student,
+      tasks,
+      ...weekData,
+    });
+
     showMessage(authMessage, "تم إرسال مهمة الحفظ للمراجعة.", "success");
   } catch (e) {
     console.error("Error submitCurriculumTask:", e);
     showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
   }
 }
+
 
 async function cancelCurriculumTask(studentCode, type, missionStartIndex) {
   try {
@@ -1246,14 +1357,25 @@ async function submitMurajaaTask(studentCode, mission) {
       created_at: Date.now(),
     });
 
-    await updateDoc(studentRef, { tasks });
-    await displayStudentDashboard({ code: studentCode, ...student, tasks });
+    // ✅ حدّث سجل الأسبوع
+    const weekData = computeUpdatedWeekLog(student);
+
+    await updateDoc(studentRef, { tasks, ...weekData });
+
+    await displayStudentDashboard({
+      code: studentCode,
+      ...student,
+      tasks,
+      ...weekData,
+    });
+
     showMessage(authMessage, "تم إرسال مهمة المراجعة للمراجعة.", "success");
   } catch (e) {
     console.error("Error submitMurajaaTask:", e);
     showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
   }
 }
+
 
 async function cancelMurajaaTask(studentCode, mission) {
   try {
