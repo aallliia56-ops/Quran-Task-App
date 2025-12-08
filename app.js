@@ -251,14 +251,26 @@ const halaqaSubtitle = $("#halaqa-subtitle");
 const halaqaBackButton = $("#halaqa-back-button");
 const halaqaStudentsGrid = $("#halaqa-students-grid");
 
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
   const params = new URLSearchParams(window.location.search);
-  const parentFromLink = params.get("p"); // مثال: ?p=506
+
+  const parentFromLink = params.get("p"); // ?p=506
+  const studentFromLink = params.get("s"); // ?s=301
 
   if (parentFromLink) {
     displayParentDashboard(parentFromLink);
+    return;
+  }
+
+  if (studentFromLink) {
+    const student = await fetchStudentByCode(studentFromLink);
+    if (student) {
+      currentUser = { role: "student", code: student.code };
+      displayStudentDashboard(student);
+    }
   }
 });
+
 
 backToOnlyChildBtn?.addEventListener("click", () => {
   const kids = window.currentParentChildren || [];
