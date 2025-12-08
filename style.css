@@ -990,3 +990,52 @@ body {
   position: relative !important;
   z-index: 4;
 }
+/* ✅ مخطط الالتزام الأسبوعي */
+.weekly-log {
+  margin: 10px 0 14px;
+  padding: 8px 10px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.weekly-log-title {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.weekly-row {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.weekly-day {
+  flex: 1;
+  text-align: center;
+  padding: 4px 0;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  font-size: 0.8rem;
+}
+
+.weekly-day-name {
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.weekly-day-status {
+  font-weight: 700;
+}
+
+.weekly-day.day-done {
+  border-color: #4ade80;
+}
+
+.weekly-day.day-missed {
+  border-color: #fca5a5;
+}
+
