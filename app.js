@@ -1536,12 +1536,14 @@ async function forwardTaskToAssistant(
 }
 
 // ==================================================
-// 9) لوحة مراجعة المعلم + لوحة الشرف + الطلاب
+// 9) لوحة مراجعة المعلم (الكود الجديد)
 // ==================================================
 
 async function loadPendingTasksForReview() {
+  if (!pendingTasksList) return;
   pendingTasksList.innerHTML =
     '<p class="message info">جارٍ تحميل المهام...</p>';
+
   try {
     const snap = await getDocs(collection(db, "students"));
 
@@ -1623,6 +1625,7 @@ async function loadPendingTasksForReview() {
         no.addEventListener("click", () =>
           reviewTask(student.code, task.id, "reject")
         );
+
         const forward = document.createElement("button");
         forward.className = "button";
         forward.textContent = "▶️";
@@ -1653,86 +1656,6 @@ async function loadPendingTasksForReview() {
   }
 }
 
-async function loadHonorBoard() {
-  if (!honorBoardDiv) return;
-
-  honorBoardDiv.innerHTML =
-    '<p class="message info">جارٍ تحميل لوحة الشرف...</p>';
-
-  try {
-    const snap = await getDocs(collection(db, "students"));
-    const all = [];
-
-    snap.forEach((docSnap) => {
-      const s = docSnap.data();
-      if (!isInCurrentHalaqa(s)) return;
-      all.push(s);
-    });
-
-    if (!all.length) {
-      honorBoardDiv.innerHTML =
-        '<p class="message info">لا يوجد طلاب في هذه الحلقة حتى الآن.</p>';
-      return;
-    }
-
-    const { buildingSorted, devAdvSorted } = buildGroupedRanks(all);
-
-    const topBuilding = buildingSorted.slice(0, 5);
-    const topDevAdv = devAdvSorted.slice(0, 5);
-
-    const container = document.createElement("div");
-
-    const makeSection = (title, studentsList) => {
-      const section = document.createElement("div");
-      const h = document.createElement("h4");
-      h.textContent = title;
-      section.appendChild(h);
-
-      if (!studentsList.length) {
-        const p = document.createElement("p");
-        p.className = "info-text";
-        p.textContent = "لا يوجد طلاب في هذا المستوى حتى الآن.";
-        section.appendChild(p);
-        return section;
-      }
-
-      const ul = document.createElement("ul");
-      ul.className = "honor-list";
-
-      studentsList.forEach((s, idx) => {
-        const li = document.createElement("li");
-        const rank = idx + 1;
-        const rankClass = rank <= 3 ? `rank-${rank}` : "rank-other";
-        li.className = `honor-item ${rankClass}`;
-
-        const level = s.murajaa_level || "BUILDING";
-        let levelName = "البناء";
-        if (level === "DEVELOPMENT") levelName = "التطوير";
-        else if (level === "ADVANCED") levelName = "المتقدم";
-
-        li.innerHTML = `
-          <span>#${rank} - ${s.name || "طالب"} (${s.code})</span>
-          <span>${s.total_points || 0} نقطة – ${levelName}</span>
-        `;
-        ul.appendChild(li);
-      });
-
-      section.appendChild(ul);
-      return section;
-    };
-
-    container.appendChild(makeSection("مستوى البناء", topBuilding));
-    container.appendChild(makeSection("مستوى التطوير / المتقدم", topDevAdv));
-
-    honorBoardDiv.innerHTML = "";
-    honorBoardDiv.appendChild(container);
-  } catch (e) {
-    console.error("Error loadHonorBoard:", e);
-    honorBoardDiv.innerHTML =
-      `<p class="message error">خطأ في تحميل لوحة الشرف: ${e.message}</p>`;
-  }
-}
-
 async function reviewTask(studentCode, taskId, action) {
   try {
     const studentRef = doc(db, "students", studentCode);
@@ -1746,6 +1669,7 @@ async function reviewTask(studentCode, taskId, action) {
       showMessage(authMessage, "المهمة غير موجودة.", "error");
       return;
     }
+
     const task = tasks[i];
     if (task.status !== "pending" && task.status !== "pending_assistant") {
       showMessage(authMessage, "المهمة ليست بانتظار المراجعة.", "error");
@@ -1753,11 +1677,11 @@ async function reviewTask(studentCode, taskId, action) {
     }
 
     if (action === "approve") {
-      // إضافة النقاط
+      // 1) زيادة النقاط
       student.total_points =
         (student.total_points || 0) + (task.points || 0);
 
-      // تحديث الحفظ / المراجعة
+      // 2) تحديث الحفظ أو المراجعة
       if (task.type === "hifz") {
         const last = task.mission_last ?? task.mission_start ?? 0;
         student.hifz_progress = last + 1;
@@ -1777,12 +1701,12 @@ async function reviewTask(studentCode, taskId, action) {
         student.murajaa_cycles = cycles;
       }
 
-      // إنهاء المهمة
+      // 3) إنهاء المهمة
       tasks[i].status = "completed";
       delete tasks[i].assistant_type;
       delete tasks[i].assistant_code;
 
-      // ✅ تحديث سجل الأسبوع بعد الموافقة
+      // 4) تحديث سجل الأسبوع بعد الموافقة
       const weekData = computeUpdatedWeekLog(student);
 
       await updateDoc(studentRef, {
@@ -1805,6 +1729,7 @@ async function reviewTask(studentCode, taskId, action) {
         "success"
       );
     } else {
+      // رفض المهمة
       if (task.type === "general") {
         tasks[i].status = "assigned";
         delete tasks[i].assistant_type;
@@ -1820,9 +1745,12 @@ async function reviewTask(studentCode, taskId, action) {
       );
     }
 
+    // إعادة تحميل لوحة المهام ولوحة الشرف
     await loadPendingTasksForReview();
     await loadHonorBoard();
-    const manageTab = $("#manage-students-tab");
+
+    // لو تبويب إدارة الطلاب مفتوح يعاد تحميله
+    const manageTab = document.getElementById("manage-students-tab");
     if (manageTab && !manageTab.classList.contains("hidden")) {
       await loadStudentsForTeacher();
     }
@@ -1835,6 +1763,7 @@ async function reviewTask(studentCode, taskId, action) {
     );
   }
 }
+
 
 function populateHifzSelects() {
   if (!newStudentHifzStart || !newStudentHifzEnd) return;
