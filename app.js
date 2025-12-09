@@ -907,42 +907,6 @@ async function displayStudentDashboard(student) {
   }
 }
 
-function renderWeeklyLog(student) {
-  const container = document.getElementById("student-weekly-log");
-  if (!container) return;
-
-  const currentWeekStart = getCurrentWeekStartDate();
-  const sameWeek = student.week_start === currentWeekStart;
-  const weekLog = sameWeek && student.week_log ? student.week_log : {};
-
-  const days = [
-    { key: "SUN", label: "أحد" },
-    { key: "MON", label: "اثنين" },
-    { key: "TUE", label: "ثلاثاء" },
-    { key: "WED", label: "أربعاء" },
-    { key: "THU", label: "خميس" },
-  ];
-
-  container.innerHTML = `
-    <h3 class="weekly-log-title">التزامي هذا الأسبوع</h3>
-    <div class="weekly-row">
-      ${days
-        .map((d) => {
-          const done = !!weekLog[d.key];
-          const mark = done ? "✓" : "✗";
-          const statusClass = done ? "day-done" : "day-missed";
-          return `
-            <div class="weekly-day ${statusClass}">
-              <div class="weekly-day-name">${d.label}</div>
-              <div class="weekly-day-status">${mark}</div>
-            </div>
-          `;
-        })
-        .join("")}
-    </div>
-  `;
-}
-
 
 function renderStudentTasks(student) {
   studentTasksDiv.innerHTML = "";
