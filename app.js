@@ -4,7 +4,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase
 import {
   getFirestore,
   collection,
-  doc,
+ doc,
   getDoc,
   getDocs,
   setDoc,
@@ -90,9 +90,8 @@ function hideAllScreens() {
   parentScreen?.classList.add("hidden");
   halaqaScreen?.classList.add("hidden");
   singleChildExitScreen?.classList.add("hidden");
-  studentExitScreen?.classList.add("hidden"); // ✅ إضافة مهمّة
+  studentExitScreen?.classList.add("hidden");
 }
-
 
 function computeRankMapForGroup(students) {
   const sorted = [...students].sort(
@@ -113,30 +112,59 @@ function computeRankMapForGroup(students) {
   return { sorted, rankMap };
 }
 
-// ✅ بداية أسبوع الحالي (من الأحد)
+// ==================================================
+//  أسبوع الالتزام (من الأحد إلى الخميس)
+// ==================================================
+
+// بداية أسبوع الحالي (من الأحد)
 function getCurrentWeekStartDate() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
-  const day = d.getDay(); // 0: أحد, 1: اثنين, ... 6: سبت في بعض البيئات 0 = Sunday
-  const diffFromSunday = day; // لو الأحد 0، الاثنين 1 .. الخ
+  const day = d.getDay(); // 0 الأحد .. 6 السبت
+  const diffFromSunday = day;
   d.setDate(d.getDate() - diffFromSunday);
-  return d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
-// ✅ مفتاح اليوم (نستخدم فقط الأحد إلى الخميس)
+// مفتاح اليوم داخل الأسبوع
 function getTodayWeekdayKey() {
   const day = new Date().getDay(); // 0 Sunday .. 6 Saturday
   switch (day) {
-    case 0: return "SUN"; // أحد
-    case 1: return "MON"; // اثنين
-    case 2: return "TUE"; // ثلاثاء
-    case 3: return "WED"; // أربعاء
-    case 4: return "THU"; // خميس
+    case 0: return "SUN";
+    case 1: return "MON";
+    case 2: return "TUE";
+    case 3: return "WED";
+    case 4: return "THU";
     default:
-      return null; // الجمعة والسبت لا تدخل في المخطط
+      return null; // الجمعة والسبت خارج المخطط
   }
 }
-// ✅ تجهيز بيانات الأسبوع للطالب بعد إنجاز مهمة (حفظ أو مراجعة)
+
+// ✅ حساب week_log الجديد بعد الموافقة على مهمة
+function computeUpdatedWeekLog(student) {
+  const currentWeekStart = getCurrentWeekStartDate();
+  let weekLog = {};
+
+  if (
+    student.week_start === currentWeekStart &&
+    student.week_log &&
+    typeof student.week_log === "object"
+  ) {
+    weekLog = { ...student.week_log };
+  }
+
+  const todayKey = getTodayWeekdayKey();
+  if (todayKey) {
+    weekLog[todayKey] = true;
+  }
+
+  return {
+    week_start: currentWeekStart,
+    week_log,
+  };
+}
+
+// ✅ رسم مخطط الأسبوع في واجهة الطالب
 function renderWeeklyLog(student) {
   const container = document.getElementById("student-weekly-log");
   if (!container) return;
@@ -172,8 +200,6 @@ function renderWeeklyLog(student) {
     </div>
   `;
 }
-
-
 
 function showSingleChildExitScreen() {
   hideAllScreens();
@@ -257,7 +283,6 @@ const studentTabButtons = document.querySelectorAll(".student-tab-button");
 const studentExitScreen = $("#student-exit-screen");
 const backToStudentBtn = $("#back-to-student-btn");
 
-
 // ==================================================
 // 3-3) شاشة المعلم
 // ==================================================
@@ -289,7 +314,7 @@ const newStudentHalaqa = $("#new-student-halaqa");
 const registerStudentButton = $("#register-student-button");
 const registerStudentMessage = $("#register-student-message");
 
-// ✅ الحقول الجديدة لنقطة انطلاق الحفظ والمراجعة
+// الحقول الجديدة لنقطة انطلاق الحفظ والمراجعة
 const studentHifzProgressInput = $("#student-hifz-progress");
 const studentMurajaaProgressInput = $("#student-murajaa-progress");
 
@@ -338,7 +363,6 @@ window.addEventListener("load", async () => {
     }
   }
 });
-
 
 backToOnlyChildBtn?.addEventListener("click", () => {
   const kids = window.currentParentChildren || [];
@@ -486,7 +510,6 @@ function updatePlanStrip({
   if (studentPlanLine) {
     studentPlanLine.textContent = `الخطة: من ${startSurah} إلى ${endSurah} • النقاط: ${points} • الترتيب: ${rank}`;
   }
-  // النص داخل الملصق: فقط من … إلى …
   safeSetText(stripPlan, `من ${startSurah} إلى ${endSurah}`);
   safeSetText(stripPoints, `النقاط: ${points}`);
   safeSetText(stripRank, `الترتيب: ${rank}`);
@@ -518,11 +541,6 @@ function getCurrentHifzMission(student) {
     lastIndex: startIndex + segs.length - 1,
     description: `${first.surah_name_ar} (${first.start_ayah}-${last.end_ayah})`,
     points: first.points || 5,
-    audioId: first.audio_id || null,
-    requireAudioFirst: !!first.audio_id,
-    audioKey: student.code
-      ? `hifz_${student.code}_${first.audio_id || startIndex}`
-      : null,
   };
 }
 
@@ -560,7 +578,6 @@ function getNextHifzMission(student) {
     lastIndex: candidate + segs.length - 1,
     description: `${first.surah_name_ar} (${first.start_ayah}-${last.end_ayah})`,
     points: first.points || 5,
-    audioId: first.audio_id || null,
   };
 }
 
@@ -767,7 +784,6 @@ halaqaBackButton?.addEventListener("click", () => {
 // ==================================================
 
 function activateStudentTab() {
-  // دائماً نظهر صفحة المهام فقط
   if (studentMainTasksSection) studentMainTasksSection.classList.remove("hidden");
   if (studentAssistantTabSection) studentAssistantTabSection.classList.add("hidden");
 
@@ -775,7 +791,7 @@ function activateStudentTab() {
   if (progressSection) progressSection.classList.remove("hidden");
 }
 
-// إخفاء تبويب مهام المساعد في صفحة الطالب نهائياً
+// إخفاء تبويب مهام المساعد
 if (studentAssistantTabSection) {
   studentAssistantTabSection.classList.add("hidden");
 }
@@ -789,25 +805,22 @@ studentTabButtons.forEach((btn) => {
 
 async function displayStudentDashboard(student) {
   try {
-    // ✅ احسب النِّسَب في الأول
     const hifzPct = computeHifzPercent(student);
     const murPct = computeMurajaaPercent(student);
-    
-    // ✅ حدّث مخطط الالتزام الأسبوعي
+
+    // مخطط الأسبوع
     renderWeeklyLog(student);
 
-    // ✅ إظهار/إخفاء بطاقات الحفظ والمراجعة حسب الإيقاف
+    // إظهار/إخفاء بطاقات الدوائر حسب الإيقاف
     const hifzCard = document.getElementById("hifz-circle-card");
     const murCard = document.getElementById("mur-circle-card");
-
     if (hifzCard) hifzCard.classList.toggle("hidden", !!student.pause_hifz);
     if (murCard) murCard.classList.toggle("hidden", !!student.pause_murajaa);
 
-    // ✅ حدّث الدوائر العلوية
+    // تحديث الدوائر
     updateStudentCircles(student, hifzPct, murPct);
 
     const els = getStudentEls();
-
     safeSetText(els.welcome, student.name || "طالب");
 
     const startIdx = student.hifz_start_id ?? 0;
@@ -907,7 +920,6 @@ async function displayStudentDashboard(student) {
   }
 }
 
-
 function renderStudentTasks(student) {
   studentTasksDiv.innerHTML = "";
   const tasksArray = Array.isArray(student.tasks) ? student.tasks : [];
@@ -916,7 +928,7 @@ function renderStudentTasks(student) {
   const hifzPaused = !!student.pause_hifz;
   const murajaaPaused = !!student.pause_murajaa;
 
-  // 1) مهمة الحفظ
+  // مهمة الحفظ
   const hifzMission = !hifzPaused ? getCurrentHifzMission(student) : null;
   if (hifzMission) {
     const pendingCurriculumTask = tasksArray.find(
@@ -936,11 +948,7 @@ function renderStudentTasks(student) {
         tagClass: "hifz",
         description: hifzMission.description,
         points: hifzMission.points,
-        pendingText: pendingCurriculumTask
-          ? isAssistantPending
-            ? ""
-            : ""
-          : "",
+        pendingText: "",
         buttonText: pendingCurriculumTask
           ? isAssistantPending
             ? "قيد المراجعة"
@@ -956,14 +964,11 @@ function renderStudentTasks(student) {
                 hifzMission.startIndex
               )
             : submitCurriculumTask(student.code, hifzMission),
-        audioId: hifzMission.audioId,
-        requireAudioFirst: true,
-        audioKey: hifzMission.audioKey,
       })
     );
   }
 
-  // 2) مهمة المراجعة
+  // مهمة المراجعة
   const murMission = !murajaaPaused ? getCurrentMurajaaMission(student) : null;
   if (murMission) {
     const pendingMurTask = tasksArray.find(
@@ -983,11 +988,7 @@ function renderStudentTasks(student) {
         tagClass: "murajaa",
         description: murMission.description,
         points: murMission.points,
-        pendingText: pendingMurTask
-          ? isAssistantPending
-            ? ""
-            : ""
-          : "",
+        pendingText: "",
         buttonText: pendingMurTask
           ? isAssistantPending
             ? "قيد المراجعة"
@@ -1003,7 +1004,7 @@ function renderStudentTasks(student) {
     );
   }
 
-  // 3) المهام العامة
+  // المهام العامة
   const generalTasks = tasksArray.filter(
     (t) => t.type === "general" && t.status !== "completed"
   );
@@ -1079,9 +1080,6 @@ function buildMissionCard({
   buttonText,
   onClick,
   disabled = false,
-  audioId = null,
-  requireAudioFirst = false,
-  audioKey = null,
 }) {
   const card = document.createElement("div");
   card.className = "task-card";
@@ -1100,116 +1098,98 @@ function buildMissionCard({
   `;
 
   const footer = card.querySelector(".task-footer");
-  const body = card.querySelector(".task-body");
-
   const btn = document.createElement("button");
   btn.className = "button success";
   btn.textContent = buttonText;
 
   if (disabled) {
     btn.disabled = true;
-  } else if (audioId && requireAudioFirst) {
-    btn.disabled = true;
   } else {
     btn.addEventListener("click", onClick);
   }
 
   footer.appendChild(btn);
-
-  // الصوت لو موجود
-  if (audioId && body) {
-    const audioWrapper = document.createElement("div");
-    audioWrapper.style.marginTop = "6px";
-    audioWrapper.className = "audio-wrapper";
-
-    const playBtn = document.createElement("button");
-    playBtn.className = "button";
-    playBtn.textContent = "🔊";
-
-    const counter = document.createElement("span");
-    counter.style.marginRight = "8px";
-
-    const audio = document.createElement("audio");
-    audio.src = `${audioId}.mp3`;
-    audio.preload = "auto";
-
-    const requiredPlays = 3;
-    let plays = 0;
-    let autoPlaying = false;
-
-    if (audioKey && typeof localStorage !== "undefined") {
-      const saved = parseInt(localStorage.getItem(audioKey) || "0", 10);
-      if (!Number.isNaN(saved)) {
-        plays = Math.min(saved, requiredPlays);
-      }
-    }
-    counter.textContent = `${plays} / ${requiredPlays}  استماع`;
-
-    if (!disabled && requireAudioFirst && plays >= requiredPlays && btn.disabled) {
-      btn.disabled = false;
-      btn.addEventListener("click", onClick);
-    }
-
-    playBtn.addEventListener("click", () => {
-      if (plays >= requiredPlays) {
-        plays = 0;
-        if (audioKey && typeof localStorage !== "undefined") {
-          localStorage.setItem(audioKey, "0");
-        }
-        counter.textContent = `0 / ${requiredPlays}  استماع`;
-      }
-
-      autoPlaying = true;
-      try {
-        audio.currentTime = 0;
-        audio.play();
-      } catch (e) {
-        console.error("audio play error", e);
-      }
-    });
-
-    audio.addEventListener("ended", () => {
-      if (!autoPlaying) return;
-
-      plays += 1;
-      if (plays > requiredPlays) plays = requiredPlays;
-
-      if (audioKey && typeof localStorage !== "undefined") {
-        localStorage.setItem(audioKey, String(plays));
-      }
-
-      counter.textContent = `${plays} / ${requiredPlays}  استماع`;
-
-      if (plays < requiredPlays) {
-        try {
-          audio.currentTime = 0;
-          audio.play();
-        } catch (e) {
-          console.error("audio replay error", e);
-        }
-      } else {
-        autoPlaying = false;
-        playBtn.textContent = "🔁";
-
-        if (!disabled && requireAudioFirst && btn.disabled) {
-          btn.disabled = false;
-          btn.addEventListener("click", onClick);
-        }
-      }
-    });
-
-    audioWrapper.appendChild(playBtn);
-    audioWrapper.appendChild(counter);
-    audioWrapper.appendChild(audio);
-    body.appendChild(audioWrapper);
-  }
-
   return card;
 }
 
 // ==================================================
 // 7) إرسال / إلغاء المهام (حفظ / مراجعة / عامة)
 // ==================================================
+
+async function submitCurriculumTask(studentCode, mission) {
+  try {
+    const studentRef = doc(db, "students", studentCode);
+    const snap = await getDoc(studentRef);
+    if (!snap.exists()) return;
+    const student = snap.data();
+
+    const tasks = Array.isArray(student.tasks) ? student.tasks : [];
+    if (
+      tasks.some(
+        (t) =>
+          t.type === "hifz" &&
+          (t.status === "pending" || t.status === "pending_assistant") &&
+          t.mission_start === mission.startIndex
+      )
+    ) {
+      showMessage(authMessage, "مهمة الحفظ قيد المراجعة بالفعل.", "info");
+      return;
+    }
+
+    tasks.push({
+      id: generateUniqueId(),
+      type: "hifz",
+      description: mission.description,
+      points: mission.points,
+      status: "pending",
+      mission_start: mission.startIndex,
+      mission_last: mission.lastIndex,
+      created_at: Date.now(),
+    });
+
+    await updateDoc(studentRef, { tasks });
+
+    await displayStudentDashboard({
+      code: studentCode,
+      ...student,
+      tasks,
+    });
+
+    showMessage(authMessage, "تم إرسال مهمة الحفظ للمراجعة.", "success");
+  } catch (e) {
+    console.error("Error submitCurriculumTask:", e);
+    showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
+  }
+}
+
+async function cancelCurriculumTask(studentCode, type, missionStartIndex) {
+  try {
+    const studentRef = doc(db, "students", studentCode);
+    const snap = await getDoc(studentRef);
+    if (!snap.exists()) return;
+    const student = snap.data();
+
+    const tasks = (Array.isArray(student.tasks) ? student.tasks : []).filter(
+      (t) =>
+        !(
+          t.type === type &&
+          t.status === "pending" &&
+          t.mission_start === missionStartIndex
+        )
+    );
+
+    await updateDoc(studentRef, { tasks });
+    await displayStudentDashboard({ code: studentCode, ...student, tasks });
+    showMessage(
+      authMessage,
+      "تم إلغاء إرسال المهمة وإعادتها لك.",
+      "success"
+    );
+  } catch (e) {
+    console.error("Error cancelCurriculumTask:", e);
+    showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
+  }
+}
 
 async function submitMurajaaTask(studentCode, mission) {
   try {
@@ -1243,7 +1223,6 @@ async function submitMurajaaTask(studentCode, mission) {
       created_at: Date.now(),
     });
 
-    // ❌ برضه هنا ما نلمس سجل الأسبوع
     await updateDoc(studentRef, { tasks });
 
     await displayStudentDashboard({
@@ -1258,41 +1237,6 @@ async function submitMurajaaTask(studentCode, mission) {
     showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
   }
 }
-
-
-
-
-
-async function cancelCurriculumTask(studentCode, type, missionStartIndex) {
-  try {
-    const studentRef = doc(db, "students", studentCode);
-    const snap = await getDoc(studentRef);
-    if (!snap.exists()) return;
-    const student = snap.data();
-
-    const tasks = (Array.isArray(student.tasks) ? student.tasks : []).filter(
-      (t) =>
-        !(
-          t.type === type &&
-          t.status === "pending" &&
-          t.mission_start === missionStartIndex
-        )
-    );
-
-    await updateDoc(studentRef, { tasks });
-    await displayStudentDashboard({ code: studentCode, ...student, tasks });
-    showMessage(
-      authMessage,
-      "تم إلغاء إرسال المهمة وإعادتها لك.",
-      "success"
-    );
-  } catch (e) {
-    console.error("Error cancelCurriculumTask:", e);
-    showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
-  }
-}
-
-
 
 async function cancelMurajaaTask(studentCode, mission) {
   try {
@@ -1377,7 +1321,6 @@ async function cancelGeneralTask(studentCode, taskId) {
 // 8) مهام المساعد (ولي الأمر) + التوجيه للمساعدين
 // ==================================================
 
-/** تحميل مهام المساعد لأي مستخدم حالي (حاليًا ولي الأمر فقط) */
 async function loadAssistantTasksForCurrentUser() {
   if (!currentUser || currentUser.role !== "parent") return;
 
@@ -1402,7 +1345,6 @@ async function loadAssistantTasksForCurrentUser() {
   renderAssistantTasksList(assigned, parentAssistantTasksList, "ولي الأمر");
 }
 
-/** رسم قائمة مهام المساعد */
 function renderAssistantTasksList(list, container, roleLabel) {
   if (!container) return;
   container.innerHTML = "";
@@ -1465,7 +1407,6 @@ function renderAssistantTasksList(list, container, roleLabel) {
   });
 }
 
-/** إظهار قائمة منسدلة بالمساعدين داخل كرت المهمة */
 async function showAssistantSelector(studentCode, taskId, containerEl) {
   try {
     const existing = containerEl.querySelector(".assistant-picker");
@@ -1543,7 +1484,6 @@ async function showAssistantSelector(studentCode, taskId, containerEl) {
   }
 }
 
-/** توجيه مهمة لمساعد (ولي أمر) */
 async function forwardTaskToAssistant(
   studentCode,
   taskId,
@@ -1812,12 +1752,12 @@ async function reviewTask(studentCode, taskId, action) {
       return;
     }
 
-            if (action === "approve") {
-      // ⬅ إضافة النقاط
+    if (action === "approve") {
+      // إضافة النقاط
       student.total_points =
         (student.total_points || 0) + (task.points || 0);
 
-      // ⬅ تحديث الحفظ / المراجعة
+      // تحديث الحفظ / المراجعة
       if (task.type === "hifz") {
         const last = task.mission_last ?? task.mission_start ?? 0;
         student.hifz_progress = last + 1;
@@ -1837,12 +1777,12 @@ async function reviewTask(studentCode, taskId, action) {
         student.murajaa_cycles = cycles;
       }
 
-      // ⬅ إنهاء المهمة
+      // إنهاء المهمة
       tasks[i].status = "completed";
       delete tasks[i].assistant_type;
       delete tasks[i].assistant_code;
 
-      // ✅ هنا نحدّث سجل الأسبوع بعد الموافقة
+      // ✅ تحديث سجل الأسبوع بعد الموافقة
       const weekData = computeUpdatedWeekLog(student);
 
       await updateDoc(studentRef, {
@@ -1864,7 +1804,6 @@ async function reviewTask(studentCode, taskId, action) {
         `تم قبول المهمة وإضافة ${task.points} نقطة للطالب ${student.name}.`,
         "success"
       );
-
     } else {
       if (task.type === "general") {
         tasks[i].status = "assigned";
@@ -1907,7 +1846,6 @@ function populateHifzSelects() {
   newStudentHifzStart.innerHTML = options;
   newStudentHifzEnd.innerHTML = options;
 
-  // ✅ نفس الخيارات لنقطة انطلاق الحفظ
   if (studentHifzProgressInput) {
     studentHifzProgressInput.innerHTML = options;
   }
@@ -1932,7 +1870,6 @@ function populateMurajaaStartSelect() {
 
   newStudentMurajaaStart.innerHTML = html;
 
-  // ✅ نفس الخيارات لنقطة انطلاق المراجعة
   if (studentMurajaaProgressInput) {
     studentMurajaaProgressInput.innerHTML = html;
   }
@@ -2100,13 +2037,11 @@ async function loadStudentIntoForm(code) {
       arr?.length ? Math.min(defStart, arr.length - 1) : 0
     ).toString();
 
-    // ✅ تعبئة نقطة انطلاق الحفظ
     if (studentHifzProgressInput) {
       const progH = s.hifz_progress ?? s.hifz_start_id ?? 0;
       studentHifzProgressInput.value = String(progH);
     }
 
-    // ✅ تعبئة نقطة انطلاق المراجعة
     if (studentMurajaaProgressInput) {
       const progM = s.murajaa_progress_index ?? s.murajaa_start_index ?? 0;
       const safeProg = arr?.length ? Math.min(progM, arr.length - 1) : 0;
@@ -2134,7 +2069,6 @@ registerStudentButton?.addEventListener("click", async () => {
   const murajaaStartIndex = parseInt(newStudentMurajaaStart.value, 10) || 0;
   const halaqaValue = newStudentHalaqa?.value || "ONSITE";
 
-  // ✅ القيم المدخلة لنقطة انطلاق الحفظ والمراجعة
   const hifzProgressIndex = parseInt(
     studentHifzProgressInput?.value ?? "",
     10
@@ -2176,7 +2110,6 @@ registerStudentButton?.addEventListener("click", async () => {
       hifz_start_id: hifzStartIndex,
       hifz_end_id: hifzEndIndex,
 
-      // ✅ لو فيه قيمة مدخلة للحفظ نأخذها، غير كذا نرجع للقديم أو للبداية
       hifz_progress: existing
         ? isNaN(hifzProgressIndex)
           ? existing.hifz_progress ?? hifzStartIndex
@@ -2189,7 +2122,6 @@ registerStudentButton?.addEventListener("click", async () => {
       murajaa_level: murajaaLevel,
       murajaa_start_index: murajaaStartIndex,
 
-      // ✅ نفس الفكرة لنقطة انطلاق المراجعة
       murajaa_progress_index: existing
         ? isNaN(murajaaProgressIndex)
           ? existing.murajaa_progress_index ?? murajaaStartIndex
@@ -2253,15 +2185,12 @@ async function displayParentDashboard(parentCode) {
 
     const parentKey = String(parentCode || "");
 
-    // أبناء هذا الولي فقط
     const children = all.filter(
       (s) => String(s.parent_code || "") === parentKey
     );
 
-    // نخزنهم لو احتجناهم لاحقاً
     window.currentParentChildren = children;
 
-    // لو ما فيه أبناء
     if (!children.length) {
       hideAllScreens();
       parentScreen?.classList.remove("hidden");
@@ -2271,7 +2200,6 @@ async function displayParentDashboard(parentCode) {
       return;
     }
 
-    // لو عنده طالب واحد فقط → ادخله مباشرة على صفحة الطالب
     if (children.length === 1) {
       const onlyChild = children[0];
       currentUser = {
@@ -2283,7 +2211,6 @@ async function displayParentDashboard(parentCode) {
       return;
     }
 
-    // لو عنده أكثر من طالب → صفحة ولي الأمر بمربعات مثل الطلاب
     hideAllScreens();
     parentScreen?.classList.remove("hidden");
 
@@ -2310,7 +2237,6 @@ async function displayParentDashboard(parentCode) {
       parentChildrenList.appendChild(tile);
     });
 
-    // (اختياري) منطق ولي أمر مساعد
     const isParentAssistant = all.some(
       (s) =>
         s.is_parent_assistant &&
@@ -2436,7 +2362,6 @@ loginButton?.addEventListener("click", async () => {
 });
 
 backToStudentBtn?.addEventListener("click", async () => {
-  // أخفي كل الشاشات قبل ما أفتح شاشة الطالب
   hideAllScreens();
 
   if (!currentUser?.code) {
@@ -2452,7 +2377,6 @@ backToStudentBtn?.addEventListener("click", async () => {
         ...snap.data(),
       });
     } else {
-      // لو ما حصل الطالب يرجع لواجهة الدخول
       authScreen.classList.remove("hidden");
     }
   } catch (e) {
@@ -2461,30 +2385,23 @@ backToStudentBtn?.addEventListener("click", async () => {
   }
 });
 
-
-
 function logout() {
-
-  // خروج الطالب
   if (currentUser?.role === "student") {
     hideAllScreens();
     studentExitScreen?.classList.remove("hidden");
     return;
   }
 
-  // خروج ولي الأمر لطالب واحد
   if (currentUser?.role === "parent" && window.currentParentChildren?.length === 1) {
     hideAllScreens();
     singleChildExitScreen?.classList.remove("hidden");
     return;
   }
 
-  // باقي الحالات → رجوع طبيعي لشاشة الدخول
   currentUser = null;
   hideAllScreens();
   authScreen?.classList.remove("hidden");
 }
-
 
 logoutButtonStudent?.addEventListener("click", logout);
 logoutButtonTeacher?.addEventListener("click", logout);
@@ -2544,5 +2461,6 @@ function refreshTeacherView() {
 populateHifzSelects();
 populateMurajaaStartSelect();
 console.log(
-  "App ready. Curriculum loaded from external file with assistants & pause flags."
+  "App ready. Curriculum loaded from external file with assistants & pause flags, without audio."
 );
+
