@@ -1292,54 +1292,6 @@ async function cancelCurriculumTask(studentCode, type, missionStartIndex) {
   }
 }
 
-async function submitMurajaaTask(studentCode, mission) {
-  try {
-    const studentRef = doc(db, "students", studentCode);
-    const snap = await getDoc(studentRef);
-    if (!snap.exists()) return;
-    const student = snap.data();
-
-    const tasks = Array.isArray(student.tasks) ? student.tasks : [];
-    if (
-      tasks.some(
-        (t) =>
-          t.type === "murajaa" &&
-          (t.status === "pending" || t.status === "pending_assistant") &&
-          t.murajaa_index === mission.index &&
-          t.murajaa_level === mission.level
-      )
-    ) {
-      showMessage(authMessage, "مهمة المراجعة قيد المراجعة بالفعل.", "info");
-      return;
-    }
-
-    tasks.push({
-      id: generateUniqueId(),
-      type: "murajaa",
-      description: mission.description,
-      points: mission.points,
-      status: "pending",
-      murajaa_level: mission.level,
-      murajaa_index: mission.index,
-      created_at: Date.now(),
-    });
-
-    // ❌ ما نحدث سجل الأسبوع هنا
-    await updateDoc(studentRef, { tasks });
-
-    await displayStudentDashboard({
-      code: studentCode,
-      ...student,
-      tasks,
-    });
-
-    showMessage(authMessage, "تم إرسال مهمة المراجعة للمراجعة.", "success");
-  } catch (e) {
-    console.error("Error submitMurajaaTask:", e);
-    showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
-  }
-}
-
 
 
 async function cancelMurajaaTask(studentCode, mission) {
