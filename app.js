@@ -137,40 +137,42 @@ function getTodayWeekdayKey() {
   }
 }
 // ✅ تجهيز بيانات الأسبوع للطالب بعد إنجاز مهمة (حفظ أو مراجعة)
-function computeUpdatedWeekLog(student) {
+function renderWeeklyLog(student) {
+  const container = document.getElementById("student-weekly-log");
+  if (!container) return;
+
   const currentWeekStart = getCurrentWeekStartDate();
-  const todayKey = getTodayWeekdayKey();
+  const sameWeek = student.week_start === currentWeekStart;
+  const weekLog = sameWeek && student.week_log ? student.week_log : {};
 
-  // لو اليوم جمعة/سبت → ما نسجل شيء
-  if (!todayKey) {
-    return {
-      week_start: student.week_start || currentWeekStart,
-      week_log: student.week_log || {},
-    };
-  }
+  const days = [
+    { key: "SUN", label: "أحد" },
+    { key: "MON", label: "اثنين" },
+    { key: "TUE", label: "ثلاثاء" },
+    { key: "WED", label: "أربعاء" },
+    { key: "THU", label: "خميس" },
+  ];
 
-  // البداية الافتراضية: كل الأيام X
-  let baseLog = {
-    SUN: false,
-    MON: false,
-    TUE: false,
-    WED: false,
-    THU: false,
-  };
-
-  // لو نفس الأسبوع السابق → نكمل على نفس السجّل
-  if (student.week_start === currentWeekStart && student.week_log) {
-    baseLog = { ...baseLog, ...student.week_log };
-  }
-
-  // نعلِّم اليوم الحالي ✅
-  baseLog[todayKey] = true;
-
-  return {
-    week_start: currentWeekStart,
-    week_log: baseLog,
-  };
+  container.innerHTML = `
+    <h3 class="weekly-log-title">التزامي هذا الأسبوع</h3>
+    <div class="weekly-row">
+      ${days
+        .map((d) => {
+          const done = !!weekLog[d.key];
+          const mark = done ? "✓" : "✗";
+          const statusClass = done ? "day-done" : "day-missed";
+          return `
+            <div class="weekly-day ${statusClass}">
+              <div class="weekly-day-name">${d.label}</div>
+              <div class="weekly-day-status">${mark}</div>
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
 }
+
 
 
 function showSingleChildExitScreen() {
@@ -1245,7 +1247,7 @@ function buildMissionCard({
 // 7) إرسال / إلغاء المهام (حفظ / مراجعة / عامة)
 // ==================================================
 
-async function submitCurriculumTask(studentCode, mission) {
+async function submitMurajaaTask(studentCode, mission) {
   try {
     const studentRef = doc(db, "students", studentCode);
     const snap = await getDoc(studentRef);
@@ -1256,27 +1258,28 @@ async function submitCurriculumTask(studentCode, mission) {
     if (
       tasks.some(
         (t) =>
-          t.type === "hifz" &&
+          t.type === "murajaa" &&
           (t.status === "pending" || t.status === "pending_assistant") &&
-          t.mission_start === mission.startIndex
+          t.murajaa_index === mission.index &&
+          t.murajaa_level === mission.level
       )
     ) {
-      showMessage(authMessage, "المهمة قيد المراجعة بالفعل.", "info");
+      showMessage(authMessage, "مهمة المراجعة قيد المراجعة بالفعل.", "info");
       return;
     }
 
     tasks.push({
       id: generateUniqueId(),
-      type: "hifz",
+      type: "murajaa",
       description: mission.description,
       points: mission.points,
       status: "pending",
-      mission_start: mission.startIndex,
-      mission_last: mission.lastIndex,
+      murajaa_level: mission.level,
+      murajaa_index: mission.index,
       created_at: Date.now(),
     });
 
-    // ❌ ما نحدث سجل الأسبوع هنا
+    // ❌ برضه هنا ما نلمس سجل الأسبوع
     await updateDoc(studentRef, { tasks });
 
     await displayStudentDashboard({
@@ -1285,12 +1288,14 @@ async function submitCurriculumTask(studentCode, mission) {
       tasks,
     });
 
-    showMessage(authMessage, "تم إرسال مهمة الحفظ للمراجعة.", "success");
+    showMessage(authMessage, "تم إرسال مهمة المراجعة للمراجعة.", "success");
   } catch (e) {
-    console.error("Error submitCurriculumTask:", e);
+    console.error("Error submitMurajaaTask:", e);
     showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
   }
 }
+
+
 
 
 
@@ -1891,10 +1896,12 @@ async function reviewTask(studentCode, taskId, action) {
       return;
     }
 
-        if (action === "approve") {
+            if (action === "approve") {
+      // ⬅ إضافة النقاط
       student.total_points =
         (student.total_points || 0) + (task.points || 0);
 
+      // ⬅ تحديث الحفظ / المراجعة
       if (task.type === "hifz") {
         const last = task.mission_last ?? task.mission_start ?? 0;
         student.hifz_progress = last + 1;
@@ -1914,9 +1921,13 @@ async function reviewTask(studentCode, taskId, action) {
         student.murajaa_cycles = cycles;
       }
 
+      // ⬅ إنهاء المهمة
       tasks[i].status = "completed";
       delete tasks[i].assistant_type;
       delete tasks[i].assistant_code;
+
+      // ✅ هنا نحدّث سجل الأسبوع بعد الموافقة
+      const weekData = computeUpdatedWeekLog(student);
 
       await updateDoc(studentRef, {
         tasks,
@@ -1928,17 +1939,16 @@ async function reviewTask(studentCode, taskId, action) {
         murajaa_start_index: student.murajaa_start_index ?? 0,
         murajaa_progress_index: student.murajaa_progress_index ?? 0,
         murajaa_cycles: student.murajaa_cycles || 0,
-        // 👈 نضيف بيانات الأسبوع
         week_start: weekData.week_start,
         week_log: weekData.week_log,
       });
-
 
       showMessage(
         authMessage,
         `تم قبول المهمة وإضافة ${task.points} نقطة للطالب ${student.name}.`,
         "success"
       );
+
     } else {
       if (task.type === "general") {
         tasks[i].status = "assigned";
