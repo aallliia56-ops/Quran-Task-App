@@ -1891,48 +1891,48 @@ async function reviewTask(studentCode, taskId, action) {
       return;
     }
 
-    if (action === "approve") {
-  student.total_points =
-    (student.total_points || 0) + (task.points || 0);
+        if (action === "approve") {
+      student.total_points =
+        (student.total_points || 0) + (task.points || 0);
 
-  if (task.type === "hifz") {
-    const last = task.mission_last ?? task.mission_start ?? 0;
-    student.hifz_progress = last + 1;
-  } else if (task.type === "murajaa") {
-    const level =
-      student.murajaa_level || task.murajaa_level || "BUILDING";
+      if (task.type === "hifz") {
+        const last = task.mission_last ?? task.mission_start ?? 0;
+        student.hifz_progress = last + 1;
+      } else if (task.type === "murajaa") {
+        const level =
+          student.murajaa_level || task.murajaa_level || "BUILDING";
 
-    const { nextStart, nextIndex, newCycle } =
-      getNextMurajaaProgressAfterAccept(student, level);
+        const { nextStart, nextIndex, newCycle } =
+          getNextMurajaaProgressAfterAccept(student, level);
 
-    let cycles = student.murajaa_cycles || 0;
-    if (newCycle) cycles += 1;
+        let cycles = student.murajaa_cycles || 0;
+        if (newCycle) cycles += 1;
 
-    student.murajaa_level = level;
-    student.murajaa_start_index = nextStart;
-    student.murajaa_progress_index = nextIndex;
-    student.murajaa_cycles = cycles;
-  }
+        student.murajaa_level = level;
+        student.murajaa_start_index = nextStart;
+        student.murajaa_progress_index = nextIndex;
+        student.murajaa_cycles = cycles;
+      }
 
-  tasks[i].status = "completed";
-  delete tasks[i].assistant_type;
-  delete tasks[i].assistant_code;
+      tasks[i].status = "completed";
+      delete tasks[i].assistant_type;
+      delete tasks[i].assistant_code;
 
-  // ✅ هنا فقط نسجّل "صح" لليوم الحالي في سجل الأسبوع
-  const weekData = computeUpdatedWeekLog(student);
+      await updateDoc(studentRef, {
+        tasks,
+        total_points: student.total_points,
+        hifz_start_id: student.hifz_start_id ?? 0,
+        hifz_end_id: student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1,
+        hifz_progress: student.hifz_progress ?? 0,
+        murajaa_level: student.murajaa_level || "BUILDING",
+        murajaa_start_index: student.murajaa_start_index ?? 0,
+        murajaa_progress_index: student.murajaa_progress_index ?? 0,
+        murajaa_cycles: student.murajaa_cycles || 0,
+        // 👈 نضيف بيانات الأسبوع
+        week_start: weekData.week_start,
+        week_log: weekData.week_log,
+      });
 
-  await updateDoc(studentRef, {
-    tasks,
-    total_points: student.total_points,
-    hifz_start_id: student.hifz_start_id ?? 0,
-    hifz_end_id: student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1,
-    hifz_progress: student.hifz_progress ?? 0,
-    murajaa_level: student.murajaa_level || "BUILDING",
-    murajaa_start_index: student.murajaa_start_index ?? 0,
-    murajaa_progress_index: student.murajaa_progress_index ?? 0,
-    murajaa_cycles: student.murajaa_cycles || 0,
-    ...weekData, // 👈 week_start + week_log
-  });
 
       showMessage(
         authMessage,
