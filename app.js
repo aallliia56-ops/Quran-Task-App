@@ -1276,16 +1276,13 @@ async function submitCurriculumTask(studentCode, mission) {
       created_at: Date.now(),
     });
 
-    // ✅ حدّث سجل الأسبوع
-    const weekData = computeUpdatedWeekLog(student);
-
-    await updateDoc(studentRef, { tasks, ...weekData });
+    // ❌ ما نحدث سجل الأسبوع هنا
+    await updateDoc(studentRef, { tasks });
 
     await displayStudentDashboard({
       code: studentCode,
       ...student,
       tasks,
-      ...weekData,
     });
 
     showMessage(authMessage, "تم إرسال مهمة الحفظ للمراجعة.", "success");
@@ -1294,6 +1291,7 @@ async function submitCurriculumTask(studentCode, mission) {
     showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
   }
 }
+
 
 
 async function cancelCurriculumTask(studentCode, type, missionStartIndex) {
@@ -1357,16 +1355,13 @@ async function submitMurajaaTask(studentCode, mission) {
       created_at: Date.now(),
     });
 
-    // ✅ حدّث سجل الأسبوع
-    const weekData = computeUpdatedWeekLog(student);
-
-    await updateDoc(studentRef, { tasks, ...weekData });
+    // ❌ ما نحدث سجل الأسبوع هنا
+    await updateDoc(studentRef, { tasks });
 
     await displayStudentDashboard({
       code: studentCode,
       ...student,
       tasks,
-      ...weekData,
     });
 
     showMessage(authMessage, "تم إرسال مهمة المراجعة للمراجعة.", "success");
@@ -1375,6 +1370,7 @@ async function submitMurajaaTask(studentCode, mission) {
     showMessage(authMessage, `حدث خطأ: ${e.message}`, "error");
   }
 }
+
 
 
 async function cancelMurajaaTask(studentCode, mission) {
@@ -1896,43 +1892,47 @@ async function reviewTask(studentCode, taskId, action) {
     }
 
     if (action === "approve") {
-      student.total_points =
-        (student.total_points || 0) + (task.points || 0);
+  student.total_points =
+    (student.total_points || 0) + (task.points || 0);
 
-      if (task.type === "hifz") {
-        const last = task.mission_last ?? task.mission_start ?? 0;
-        student.hifz_progress = last + 1;
-      } else if (task.type === "murajaa") {
-        const level =
-          student.murajaa_level || task.murajaa_level || "BUILDING";
+  if (task.type === "hifz") {
+    const last = task.mission_last ?? task.mission_start ?? 0;
+    student.hifz_progress = last + 1;
+  } else if (task.type === "murajaa") {
+    const level =
+      student.murajaa_level || task.murajaa_level || "BUILDING";
 
-        const { nextStart, nextIndex, newCycle } =
-          getNextMurajaaProgressAfterAccept(student, level);
+    const { nextStart, nextIndex, newCycle } =
+      getNextMurajaaProgressAfterAccept(student, level);
 
-        let cycles = student.murajaa_cycles || 0;
-        if (newCycle) cycles += 1;
+    let cycles = student.murajaa_cycles || 0;
+    if (newCycle) cycles += 1;
 
-        student.murajaa_level = level;
-        student.murajaa_start_index = nextStart;
-        student.murajaa_progress_index = nextIndex;
-        student.murajaa_cycles = cycles;
-      }
+    student.murajaa_level = level;
+    student.murajaa_start_index = nextStart;
+    student.murajaa_progress_index = nextIndex;
+    student.murajaa_cycles = cycles;
+  }
 
-      tasks[i].status = "completed";
-      delete tasks[i].assistant_type;
-      delete tasks[i].assistant_code;
+  tasks[i].status = "completed";
+  delete tasks[i].assistant_type;
+  delete tasks[i].assistant_code;
 
-      await updateDoc(studentRef, {
-        tasks,
-        total_points: student.total_points,
-        hifz_start_id: student.hifz_start_id ?? 0,
-        hifz_end_id: student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1,
-        hifz_progress: student.hifz_progress ?? 0,
-        murajaa_level: student.murajaa_level || "BUILDING",
-        murajaa_start_index: student.murajaa_start_index ?? 0,
-        murajaa_progress_index: student.murajaa_progress_index ?? 0,
-        murajaa_cycles: student.murajaa_cycles || 0,
-      });
+  // ✅ هنا فقط نسجّل "صح" لليوم الحالي في سجل الأسبوع
+  const weekData = computeUpdatedWeekLog(student);
+
+  await updateDoc(studentRef, {
+    tasks,
+    total_points: student.total_points,
+    hifz_start_id: student.hifz_start_id ?? 0,
+    hifz_end_id: student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1,
+    hifz_progress: student.hifz_progress ?? 0,
+    murajaa_level: student.murajaa_level || "BUILDING",
+    murajaa_start_index: student.murajaa_start_index ?? 0,
+    murajaa_progress_index: student.murajaa_progress_index ?? 0,
+    murajaa_cycles: student.murajaa_cycles || 0,
+    ...weekData, // 👈 week_start + week_log
+  });
 
       showMessage(
         authMessage,
