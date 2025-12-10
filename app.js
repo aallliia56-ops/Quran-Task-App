@@ -163,29 +163,7 @@ function computeUpdatedWeekLog(student) {
   };
 }
 
-// ✅ حساب week_log الجديد بعد الموافقة على مهمة
-function computeUpdatedWeekLog(student) {
-  const currentWeekStart = getCurrentWeekStartDate();
-  let weekLog = {};
 
-  if (
-    student.week_start === currentWeekStart &&
-    student.week_log &&
-    typeof student.week_log === "object"
-  ) {
-    weekLog = { ...student.week_log };
-  }
-
-  const todayKey = getTodayWeekdayKey();
-  if (todayKey) {
-    weekLog[todayKey] = true;
-  }
-
-  return {
-    week_start: currentWeekStart,
-    week_log,
-  };
-}
 
 // ✅ رسم مخطط الأسبوع في واجهة الطالب
 function renderWeeklyLog(student) {
