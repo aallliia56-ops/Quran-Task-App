@@ -1656,6 +1656,87 @@ async function loadPendingTasksForReview() {
       `<p class="message error">خطأ في تحميل المهام: ${e.message}</p>`;
   }
 }
+async function loadHonorBoard() {
+  if (!honorBoardDiv) return;
+
+  honorBoardDiv.innerHTML =
+    '<p class="message info">جارٍ تحميل لوحة الشرف...</p>';
+
+  try {
+    const snap = await getDocs(collection(db, "students"));
+    const all = [];
+
+    snap.forEach((docSnap) => {
+      const s = docSnap.data();
+      if (!isInCurrentHalaqa(s)) return;
+      all.push(s);
+    });
+
+    if (!all.length) {
+      honorBoardDiv.innerHTML =
+        '<p class="message info">لا يوجد طلاب في هذه الحلقة حتى الآن.</p>';
+      return;
+    }
+
+    const { buildingSorted, devAdvSorted } = buildGroupedRanks(all);
+
+    const topBuilding = buildingSorted.slice(0, 5);
+    const topDevAdv = devAdvSorted.slice(0, 5);
+
+    const container = document.createElement("div");
+
+    const makeSection = (title, studentsList) => {
+      const section = document.createElement("div");
+      const h = document.createElement("h4");
+      h.textContent = title;
+      section.appendChild(h);
+
+      if (!studentsList.length) {
+        const p = document.createElement("p");
+        p.className = "info-text";
+        p.textContent = "لا يوجد طلاب في هذا المستوى حتى الآن.";
+        section.appendChild(p);
+        return section;
+      }
+
+      const ul = document.createElement("ul");
+      ul.className = "honor-list";
+
+      studentsList.forEach((s, idx) => {
+        const li = document.createElement("li");
+        const rank = idx + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : "rank-other";
+        li.className = `honor-item ${rankClass}`;
+
+        const level = s.murajaa_level || "BUILDING";
+        let levelName = "البناء";
+        if (level === "DEVELOPMENT") levelName = "التطوير";
+        else if (level === "ADVANCED") levelName = "المتقدم";
+
+        li.innerHTML = `
+          <span>#${rank} - ${s.name || "طالب"} (${s.code})</span>
+          <span>${s.total_points || 0} نقطة – ${levelName}</span>
+        `;
+        ul.appendChild(li);
+      });
+
+      section.appendChild(ul);
+      return section;
+    };
+
+    container.appendChild(makeSection("مستوى البناء", topBuilding));
+    container.appendChild(
+      makeSection("مستوى التطوير / المتقدم", topDevAdv)
+    );
+
+    honorBoardDiv.innerHTML = "";
+    honorBoardDiv.appendChild(container);
+  } catch (e) {
+    console.error("Error loadHonorBoard:", e);
+    honorBoardDiv.innerHTML =
+      `<p class="message error">خطأ في تحميل لوحة الشرف: ${e.message}</p>`;
+  }
+}
 
 async function reviewTask(studentCode, taskId, action) {
   try {
