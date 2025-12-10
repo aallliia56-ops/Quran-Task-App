@@ -1709,7 +1709,6 @@ async function reviewTask(studentCode, taskId, action) {
 
       // 4) تحديث سجل الأسبوع بعد الموافقة
       const weekData = computeUpdatedWeekLog(student);
-
       await updateDoc(studentRef, {
         tasks,
         total_points: student.total_points,
