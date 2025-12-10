@@ -140,6 +140,29 @@ function getTodayWeekdayKey() {
   }
 }
 
+// ✅ تحضير سجل الأسبوع بعد اعتماد مهمة من المعلم
+function computeUpdatedWeekLog(student) {
+  // بداية أسبوع اليوم (من الأحد)
+  const currentWeekStart = getCurrentWeekStartDate();
+  const todayKey = getTodayWeekdayKey(); // "SUN" .. "THU" أو null للجمعة/السبت
+
+  // لو نفس الأسبوع المخزن → ننسخ السجل القديم، غير كذا نبدأ من جديد
+  let weekLog = {};
+  if (student.week_start === currentWeekStart && student.week_log) {
+    weekLog = { ...student.week_log };
+  }
+
+  // لو اليوم من الأحد إلى الخميس → نعلمه منجز
+  if (todayKey) {
+    weekLog[todayKey] = true;
+  }
+
+  return {
+    week_start: currentWeekStart,
+    week_log: weekLog,
+  };
+}
+
 // ✅ حساب week_log الجديد بعد الموافقة على مهمة
 function computeUpdatedWeekLog(student) {
   const currentWeekStart = getCurrentWeekStartDate();
