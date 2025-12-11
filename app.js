@@ -390,31 +390,26 @@ backToOnlyChildBtn?.addEventListener("click", () => {
 function getReviewStartIndexFromHifz(student) {
   if (!HIFZ_CURRICULUM.length) return 0;
 
-  // نأخذ التقدم في الحفظ
+  // التقدم في الحفظ (نستخدمه كما هو، بدون -1 ولا +1)
   const startId = student.hifz_start_id ?? 0;
   const rawProg = student.hifz_progress ?? startId;
 
-  // نتأكد أن التقدم داخل حدود المنهج (0 إلى آخر مقطع)
+  // نتأكد أن التقدم داخل حدود المنهج
   const maxIndex = HIFZ_CURRICULUM.length - 1;
   const clampedProg = Math.min(Math.max(rawProg, startId), maxIndex);
 
-  // خريطة المنهج ترجع أرقام مراجعة 1..27
-  const reviewNumber = getReviewStartFromHifzIndex(clampedProg); // مثل 1 أو 27
-
-  // لو رجع 0 أو قيمة غير صالحة → نبدأ من 0
-  if (typeof reviewNumber !== "number" || reviewNumber <= 0) {
-    return 0;
-  }
-
-  // نحول رقم المراجعة (1..27) إلى فهرس مصفوفة (0..26)
-  const idx = reviewNumber - 1;
+  // 🔁 نمرر الفهرس مباشرة إلى الخريطة
+  const reviewIndexFromMap = getReviewStartFromHifzIndex(clampedProg);
+  // الخريطة ترجع رقم المهمة في المراجعة كما هو (0..27 مثلاً)
+  if (typeof reviewIndexFromMap !== "number") return 0;
 
   const arr = REVIEW_CURRICULUM.BUILDING || [];
   const len = arr.length || 1;
 
-  // ضمان أن الفهرس داخل المدى
-  return ((idx % len) + len) % len;
+  // نضمن أنه داخل حدود مصفوفة المراجعة
+  return Math.min(Math.max(reviewIndexFromMap, 0), len - 1);
 }
+
 
 
 /**
