@@ -435,41 +435,33 @@ function getNextMurajaaProgressAfterAccept(student, level) {
 
   const len = arr.length;
 
-  // الفهرس الحالي للمراجعة
+  // أين نحن الآن؟
   let cur = student.murajaa_progress_index;
   if (cur == null) {
-    const fallbackStart =
-      student.murajaa_start_index ??
-      getReviewStartIndexFromHifz(student) ??
-      0;
-    cur = fallbackStart;
+    cur = student.murajaa_start_index ?? 0;
   }
+  cur = ((cur % len) + len) % len;
 
-  // تأمين أن القيمة داخل [0 .. len-1]
-  cur = Math.min(Math.max(cur, 0), len - 1);
+  const lastIndex = len - 1;
 
-  let nextStart = student.murajaa_start_index ?? cur;
+  let nextStart = student.murajaa_start_index ?? 0;
   let nextIndex;
   let newCycle = false;
 
-  // ✅ لو كان في آخر مهمة مراجعة
-  if (cur >= len - 1) {
-    const mapped = getReviewStartIndexFromHifz(student); // من خريطتك
-    const safe = Math.min(Math.max(mapped, 0), len - 1);
-
-    nextStart = safe;
-    nextIndex = safe;
+  if (cur === lastIndex) {
+    // ✅ أنجز آخر مهمة مراجعة → نبدأ دورة جديدة حسب خريطة الحفظ
+    const fromHifz = getReviewStartIndexFromHifz(student); // يرجع 0..len-1
+    const safeStart = ((fromHifz % len) + len) % len;
+    nextStart = safeStart;
+    nextIndex = safeStart;
     newCycle = true;
   } else {
-    // غير آخر مهمة → اللي بعدها مباشرة
-    nextIndex = cur + 1;
+    // مجرد انتقال للمهمة التالية
+    nextIndex = (cur + 1) % len;
   }
 
   return { nextStart, nextIndex, newCycle };
 }
-
-
-
 
 
 const getStudentEls = () => ({
