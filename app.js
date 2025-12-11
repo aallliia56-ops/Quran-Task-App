@@ -390,20 +390,32 @@ backToOnlyChildBtn?.addEventListener("click", () => {
 function getReviewStartIndexFromHifz(student) {
   if (!HIFZ_CURRICULUM.length) return 0;
 
-  // hifz_progress = المقطع القادم
-  // آخر مقطع منجَز فعليًا = واحد قبله
-  let lastDone =
-    typeof student.hifz_progress === "number"
-      ? student.hifz_progress - 1
-      : -1;
+  // نأخذ التقدم في الحفظ
+  const startId = student.hifz_start_id ?? 0;
+  const rawProg = student.hifz_progress ?? startId;
 
-  if (lastDone < 0) lastDone = 0;
-  if (lastDone > 83) lastDone = 83;
+  // نتأكد أن التقدم داخل حدود المنهج (0 إلى آخر مقطع)
+  const maxIndex = HIFZ_CURRICULUM.length - 1;
+  const clampedProg = Math.min(Math.max(rawProg, startId), maxIndex);
 
-  const mappedReview = getReviewStartFromHifzIndex(lastDone);
+  // خريطة المنهج ترجع أرقام مراجعة 1..27
+  const reviewNumber = getReviewStartFromHifzIndex(clampedProg); // مثل 1 أو 27
 
-  return typeof mappedReview === "number" ? mappedReview : 0;
+  // لو رجع 0 أو قيمة غير صالحة → نبدأ من 0
+  if (typeof reviewNumber !== "number" || reviewNumber <= 0) {
+    return 0;
+  }
+
+  // نحول رقم المراجعة (1..27) إلى فهرس مصفوفة (0..26)
+  const idx = reviewNumber - 1;
+
+  const arr = REVIEW_CURRICULUM.BUILDING || [];
+  const len = arr.length || 1;
+
+  // ضمان أن الفهرس داخل المدى
+  return ((idx % len) + len) % len;
 }
+
 
 /**
  * المراجعة التالية بعد قبول مهمة مراجعة واحدة
