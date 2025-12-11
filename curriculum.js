@@ -8,6 +8,42 @@
  *   - التين + العلق
  *   - القدر + البينة
  */
+// خريطة تحويل مقطع الحفظ (index) إلى بداية المراجعة (index في REVIEW_CURRICULUM)
+export const REVIEW_START_MAP = [
+  { min: 0,  max: 5,  review: 27 },
+  { min: 6,  max: 8,  review: 26 },
+  { min: 9,  max: 11, review: 25 },
+  { min: 12, max: 13, review: 24 },
+  { min: 14, max: 15, review: 23 },
+  { min: 16, max: 20, review: 22 },
+  { min: 21, max: 24, review: 21 },
+  { min: 25, max: 26, review: 20 },
+  { min: 27, max: 29, review: 19 },
+  { min: 30, max: 30, review: 18 },
+  { min: 31, max: 33, review: 17 },
+  { min: 34, max: 38, review: 16 },
+  { min: 39, max: 41, review: 14 },
+  { min: 42, max: 44, review: 13 },
+  { min: 45, max: 51, review: 12 },
+  { min: 52, max: 55, review: 11 },
+  { min: 56, max: 60, review: 10 },
+  { min: 61, max: 63, review: 8  },
+  { min: 64, max: 67, review: 7  },
+  { min: 68, max: 72, review: 5  },
+  { min: 73, max: 77, review: 3  },
+  { min: 78, max: 83, review: 1  },
+];
+
+// دالة تعيد رقم مهمة المراجعة بناءً على رقم مهمة الحفظ
+export function getReviewStartFromHifzIndex(hifzIndex) {
+  for (const row of REVIEW_START_MAP) {
+    if (hifzIndex >= row.min && hifzIndex <= row.max) {
+      return row.review;
+    }
+  }
+  // لو ما حصلناه في الخريطة → ترجع أول مهمة (أو 0 لو حاب)
+  return 0;
+}
 
 // ======================================================================
 // 1. مقاطع الحفظ لجزء النبأ فقط (من 78 إلى 114)
