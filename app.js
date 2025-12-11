@@ -438,33 +438,36 @@ function getNextMurajaaProgressAfterAccept(student, level) {
   // الفهرس الحالي للمراجعة
   let cur = student.murajaa_progress_index;
   if (cur == null) {
-    // لو ما فيه تقدّم، نبدأ من start أو من الخريطة أو من 0
-    cur =
+    const fallbackStart =
       student.murajaa_start_index ??
       getReviewStartIndexFromHifz(student) ??
       0;
+    cur = fallbackStart;
   }
-  cur = ((cur % len) + len) % len;
+
+  // تأمين أن القيمة داخل [0 .. len-1]
+  cur = Math.min(Math.max(cur, 0), len - 1);
 
   let nextStart = student.murajaa_start_index ?? cur;
-  let nextIndex = cur;
+  let nextIndex;
   let newCycle = false;
 
-  // ✅ إذا الطالب أنهى "آخر مهمة مراجعة" (الفهرس len-1)
-  if (cur === len - 1) {
-    const fromHifz = getReviewStartIndexFromHifz(student); // بناءً على خريطتك
-    const safeStart = ((fromHifz % len) + len) % len;
+  // ✅ لو كان في آخر مهمة مراجعة
+  if (cur >= len - 1) {
+    const mapped = getReviewStartIndexFromHifz(student); // من خريطتك
+    const safe = Math.min(Math.max(mapped, 0), len - 1);
 
-    nextStart = safeStart;
-    nextIndex = safeStart;
+    nextStart = safe;
+    nextIndex = safe;
     newCycle = true;
   } else {
-    // غير آخر مهمة → نروح للمهمة اللي بعدها عادي
+    // غير آخر مهمة → اللي بعدها مباشرة
     nextIndex = cur + 1;
   }
 
   return { nextStart, nextIndex, newCycle };
 }
+
 
 
 
@@ -589,11 +592,26 @@ function getNextMurajaaMission(student) {
   if (!arr?.length) return null;
 
   const len = arr.length;
-  const start = ((student.murajaa_start_index ?? 0) % len + len) % len;
-  let idx = student.murajaa_progress_index ?? start;
-  idx = ((idx % len) + len) % len;
 
-  const nextIndex = (idx + 1) % len;
+  let cur = student.murajaa_progress_index;
+  if (cur == null) {
+    const fallbackStart =
+      student.murajaa_start_index ??
+      getReviewStartIndexFromHifz(student) ??
+      0;
+    cur = fallbackStart;
+  }
+  cur = Math.min(Math.max(cur, 0), len - 1);
+
+  let nextIndex;
+  if (cur >= len - 1) {
+    const mapped = getReviewStartIndexFromHifz(student);
+    const safe = Math.min(Math.max(mapped, 0), len - 1);
+    nextIndex = safe;
+  } else {
+    nextIndex = cur + 1;
+  }
+
   const item = arr[nextIndex];
   return {
     type: "murajaa",
@@ -603,6 +621,7 @@ function getNextMurajaaMission(student) {
     points: item.points || 3,
   };
 }
+
 
 function computeHifzPercent(student) {
   const all = HIFZ_CURRICULUM;
