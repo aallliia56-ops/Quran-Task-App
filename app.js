@@ -435,39 +435,37 @@ function getNextMurajaaProgressAfterAccept(student, level) {
 
   const len = arr.length;
 
-  // بداية الدورة الحالية للمراجعة
-  let start = student.murajaa_start_index ?? 0;
-  start = ((start % len) + len) % len;
-
-  // أين الطالب الآن في المراجعة؟
+  // الفهرس الحالي للمراجعة
   let cur = student.murajaa_progress_index;
-  if (cur == null) cur = start;
+  if (cur == null) {
+    // لو ما فيه تقدّم، نبدأ من start أو من الخريطة أو من 0
+    cur =
+      student.murajaa_start_index ??
+      getReviewStartIndexFromHifz(student) ??
+      0;
+  }
   cur = ((cur % len) + len) % len;
 
-  // 🔚 آخر مهمة في الدورة الحالية (من start ولفّة كاملة)
-  const lastIndexInCycle = (start + len - 1) % len;
+  let nextStart = student.murajaa_start_index ?? cur;
+  let nextIndex = cur;
+  let newCycle = false;
 
-  let nextStart, nextIndex, newCycle;
+  // ✅ إذا الطالب أنهى "آخر مهمة مراجعة" (الفهرس len-1)
+  if (cur === len - 1) {
+    const fromHifz = getReviewStartIndexFromHifz(student); // بناءً على خريطتك
+    const safeStart = ((fromHifz % len) + len) % len;
 
-  if (cur === lastIndexInCycle) {
-    // ✅ الطالب أنهى آخر مهمة في الدورة
+    nextStart = safeStart;
+    nextIndex = safeStart;
     newCycle = true;
-
-    // نحدد نقطة بداية الدورة الجديدة من خريطة الحفظ
-    let mappedStart = getReviewStartIndexFromHifz(student);
-    mappedStart = ((mappedStart % len) + len) % len;
-
-    nextStart = mappedStart; // بداية الدورة الجديدة
-    nextIndex = mappedStart; // أول مهمة في الدورة الجديدة
   } else {
-    // 👍 لسه في نص الدورة → نروح للمهمة اللي بعدها عادي
-    newCycle = false;
-    nextStart = start;
-    nextIndex = (cur + 1) % len;
+    // غير آخر مهمة → نروح للمهمة اللي بعدها عادي
+    nextIndex = cur + 1;
   }
 
   return { nextStart, nextIndex, newCycle };
 }
+
 
 
 
