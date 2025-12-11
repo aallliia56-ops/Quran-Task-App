@@ -390,25 +390,33 @@ backToOnlyChildBtn?.addEventListener("click", () => {
 function getReviewStartIndexFromHifz(student) {
   if (!HIFZ_CURRICULUM.length) return 0;
 
-  // التقدم في الحفظ (نستخدمه كما هو، بدون -1 ولا +1)
+  // نأخذ التقدم في الحفظ
   const startId = student.hifz_start_id ?? 0;
   const rawProg = student.hifz_progress ?? startId;
 
-  // نتأكد أن التقدم داخل حدود المنهج
+  // نتأكد أن التقدم داخل حدود المنهج (0 إلى آخر مقطع)
   const maxIndex = HIFZ_CURRICULUM.length - 1;
   const clampedProg = Math.min(Math.max(rawProg, startId), maxIndex);
 
-  // 🔁 نمرر الفهرس مباشرة إلى الخريطة
-  const reviewIndexFromMap = getReviewStartFromHifzIndex(clampedProg);
-  // الخريطة ترجع رقم المهمة في المراجعة كما هو (0..27 مثلاً)
-  if (typeof reviewIndexFromMap !== "number") return 0;
+  // خريطة المنهج ترجع أرقام مراجعة 1..27 حسب جدولك
+  const reviewNumber = getReviewStartFromHifzIndex(clampedProg); // مثل 1 أو 27
 
   const arr = REVIEW_CURRICULUM.BUILDING || [];
   const len = arr.length || 1;
 
-  // نضمن أنه داخل حدود مصفوفة المراجعة
-  return Math.min(Math.max(reviewIndexFromMap, 0), len - 1);
+  // لو صار أي خطأ في الخريطة → لا نرجع لأول مهمة، نرجع لنفس البداية القديمة
+  if (typeof reviewNumber !== "number" || reviewNumber <= 0) {
+    const fallback = student.murajaa_start_index ?? 0;
+    return ((fallback % len) + len) % len;
+  }
+
+  // نحول رقم المراجعة (1..27) إلى فهرس مصفوفة (0..26)
+  const idx = reviewNumber - 1;
+
+  // ضمان أن الفهرس داخل المدى
+  return ((idx % len) + len) % len;
 }
+
 
 
 
@@ -427,7 +435,7 @@ function getNextMurajaaProgressAfterAccept(student, level) {
 
   const len = arr.length;
 
-  // نقطة بداية الدورة الحالية للمراجعة
+  // بداية الدورة الحالية للمراجعة
   let start = student.murajaa_start_index ?? 0;
   start = ((start % len) + len) % len;
 
@@ -436,27 +444,31 @@ function getNextMurajaaProgressAfterAccept(student, level) {
   if (cur == null) cur = start;
   cur = ((cur % len) + len) % len;
 
-  // المهمة التالية في نفس الدورة
-  const next = (cur + 1) % len;
+  // 🔚 آخر مهمة في الدورة الحالية (من start ولفّة كاملة)
+  const lastIndexInCycle = (start + len - 1) % len;
 
-  let nextStart = start;
-  let nextIndex = next;
-  let newCycle = false;
+  let nextStart, nextIndex, newCycle;
 
-  // ✅ لو الطالب أنهى آخر مهمة في الدورة (رجعنا لنقطة البداية)
-  if (next === start) {
+  if (cur === lastIndexInCycle) {
+    // ✅ الطالب أنهى آخر مهمة في الدورة
     newCycle = true;
 
-    // نحدد نقطة بداية الدورة الجديدة من خريطة الحفظ اللي أنت راسمها
+    // نحدد نقطة بداية الدورة الجديدة من خريطة الحفظ
     let mappedStart = getReviewStartIndexFromHifz(student);
-    mappedStart = ((mappedStart % len) + len) % len; // تأمين داخل المدى
+    mappedStart = ((mappedStart % len) + len) % len;
 
-    nextStart = mappedStart;   // بداية الدورة الجديدة
-    nextIndex = mappedStart;   // أول مهمة في الدورة الجديدة
+    nextStart = mappedStart; // بداية الدورة الجديدة
+    nextIndex = mappedStart; // أول مهمة في الدورة الجديدة
+  } else {
+    // 👍 لسه في نص الدورة → نروح للمهمة اللي بعدها عادي
+    newCycle = false;
+    nextStart = start;
+    nextIndex = (cur + 1) % len;
   }
 
   return { nextStart, nextIndex, newCycle };
 }
+
 
 
 const getStudentEls = () => ({
