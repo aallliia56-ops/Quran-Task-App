@@ -4,7 +4,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase
 import {
   getFirestore,
   collection,
- doc,
+  doc,
   getDoc,
   getDocs,
   setDoc,
@@ -134,11 +134,16 @@ function getCurrentWeekStartDate() {
 function getTodayWeekdayKey() {
   const day = new Date().getDay(); // 0 Sunday .. 6 Saturday
   switch (day) {
-    case 0: return "SUN";
-    case 1: return "MON";
-    case 2: return "TUE";
-    case 3: return "WED";
-    case 4: return "THU";
+    case 0:
+      return "SUN";
+    case 1:
+      return "MON";
+    case 2:
+      return "TUE";
+    case 3:
+      return "WED";
+    case 4:
+      return "THU";
     default:
       return null; // الجمعة والسبت خارج المخطط
   }
@@ -146,17 +151,14 @@ function getTodayWeekdayKey() {
 
 // ✅ تحضير سجل الأسبوع بعد اعتماد مهمة من المعلم
 function computeUpdatedWeekLog(student) {
-  // بداية أسبوع اليوم (من الأحد)
   const currentWeekStart = getCurrentWeekStartDate();
   const todayKey = getTodayWeekdayKey(); // "SUN" .. "THU" أو null للجمعة/السبت
 
-  // لو نفس الأسبوع المخزن → ننسخ السجل القديم، غير كذا نبدأ من جديد
   let weekLog = {};
   if (student.week_start === currentWeekStart && student.week_log) {
     weekLog = { ...student.week_log };
   }
 
-  // لو اليوم من الأحد إلى الخميس → نعلمه منجز
   if (todayKey) {
     weekLog[todayKey] = true;
   }
@@ -166,8 +168,6 @@ function computeUpdatedWeekLog(student) {
     week_log: weekLog,
   };
 }
-
-
 
 // ✅ رسم مخطط الأسبوع في واجهة الطالب
 function renderWeeklyLog(student) {
@@ -387,64 +387,23 @@ backToOnlyChildBtn?.addEventListener("click", () => {
 // 4) دوال مساعدة خاصة بالطالب (تخطيط/نسب/دوائر)
 // ==================================================
 
-// ترتيب السور في منهج الحفظ (أرقام سور فريدة من الناس إلى النبأ)
-const UNIQUE_SURAH_ORDER = (() => {
-  const seen = new Set();
-  const arr = [];
-  HIFZ_CURRICULUM.forEach((seg) => {
-    if (!seen.has(seg.surah_number)) {
-      seen.add(seg.surah_number);
-      arr.push(seg.surah_number);
-    }
-  });
-  return arr;
-})();
-
-// رقم السورة -> اسم السورة من منهج الحفظ
-const SURAH_NAME_BY_NUMBER = (() => {
-  const map = {};
-  HIFZ_CURRICULUM.forEach((seg) => {
-    if (!map[seg.surah_number]) {
-      map[seg.surah_number] = seg.surah_name_ar;
-    }
-  });
-  return map;
-})();
-
-// نبحث داخل أسماء مهام المراجعة عن اسم السورة
-function findReviewIndexForSurah(surahNumber) {
-  const sName = SURAH_NAME_BY_NUMBER[surahNumber];
-  if (!sName) return 0;
-
-  const arr = REVIEW_CURRICULUM.BUILDING || [];
-  for (let i = 0; i < arr.length; i++) {
-    const name = arr[i].name || "";
-    if (name.includes(sName)) {
-      return i;
-    }
-  }
-  return 0;
-}
-
 function getReviewStartIndexFromHifz(student) {
   if (!HIFZ_CURRICULUM.length) return 0;
 
-  const startId = student.hifz_start_id ?? 0;
-  const endId = student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1;
+  // hifz_progress = المقطع القادم
+  // آخر مقطع منجَز فعليًا = واحد قبله
+  let lastDone =
+    typeof student.hifz_progress === "number"
+      ? student.hifz_progress - 1
+      : -1;
 
-  // نأخذ موضع التقدم في الحفظ (أو بداية الخطة لو مش محدد)
-  const rawProg = student.hifz_progress ?? startId;
+  if (lastDone < 0) lastDone = 0;
+  if (lastDone > 83) lastDone = 83;
 
-  // نتأكد أنه داخل حدود الخطة
-  const clampedProg = Math.min(Math.max(rawProg, startId), endId);
+  const mappedReview = getReviewStartFromHifzIndex(lastDone);
 
-  // نمرره على خريطة المنهج في curriculum.js
-  const mappedReview = getReviewStartFromHifzIndex(clampedProg);
-
-  // لو رجعنا قيمة صالحة نستخدمها، غير كذا نرجع 0
   return typeof mappedReview === "number" ? mappedReview : 0;
 }
-
 
 /**
  * المراجعة التالية بعد قبول مهمة مراجعة واحدة
@@ -474,7 +433,7 @@ function getNextMurajaaProgressAfterAccept(student, level) {
   let nextIndex = next;
   let newCycle = false;
 
-  // لو رجعنا لنفس بداية الدورة الحالية
+  // 🔁 لو رجعنا لنفس بداية الدورة → نبدأ دورة جديدة حسب خريطة الحفظ
   if (next === start) {
     newCycle = true;
     const fromHifz = getReviewStartIndexFromHifz(student);
