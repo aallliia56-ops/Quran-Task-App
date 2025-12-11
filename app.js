@@ -11,7 +11,11 @@ import {
   updateDoc,
 } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-import { HIFZ_CURRICULUM, REVIEW_CURRICULUM } from "./curriculum.js";
+import {
+  HIFZ_CURRICULUM,
+  REVIEW_CURRICULUM,
+  getReviewStartFromHifzIndex,
+} from "./curriculum.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBBbSXcQZCacFozO4qkvGiumRT0x-v8uOY",
@@ -422,32 +426,25 @@ function findReviewIndexForSurah(surahNumber) {
   return 0;
 }
 
-/**
- * حساب فهرس بداية المراجعة اعتماداً على آخر ما أنجزه الطالب في الحفظ
- */
 function getReviewStartIndexFromHifz(student) {
   if (!HIFZ_CURRICULUM.length) return 0;
 
   const startId = student.hifz_start_id ?? 0;
   const endId = student.hifz_end_id ?? HIFZ_CURRICULUM.length - 1;
 
+  // نأخذ موضع التقدم في الحفظ (أو بداية الخطة لو مش محدد)
   const rawProg = student.hifz_progress ?? startId;
-  const clampedProg = Math.min(Math.max(rawProg, startId), endId + 1);
 
-  const lastDoneIndex = Math.max(startId, clampedProg - 1);
-  const lastSeg = HIFZ_CURRICULUM[lastDoneIndex];
-  if (!lastSeg) return 0;
+  // نتأكد أنه داخل حدود الخطة
+  const clampedProg = Math.min(Math.max(rawProg, startId), endId);
 
-  const lastSurahNumber = lastSeg.surah_number;
+  // نمرره على خريطة المنهج في curriculum.js
+  const mappedReview = getReviewStartFromHifzIndex(clampedProg);
 
-  const idxInUnique = UNIQUE_SURAH_ORDER.indexOf(lastSurahNumber);
-  if (idxInUnique === -1) return 0;
-
-  const prevSurahNumber =
-    idxInUnique > 0 ? UNIQUE_SURAH_ORDER[idxInUnique - 1] : lastSurahNumber;
-
-  return findReviewIndexForSurah(prevSurahNumber);
+  // لو رجعنا قيمة صالحة نستخدمها، غير كذا نرجع 0
+  return typeof mappedReview === "number" ? mappedReview : 0;
 }
+
 
 /**
  * المراجعة التالية بعد قبول مهمة مراجعة واحدة
