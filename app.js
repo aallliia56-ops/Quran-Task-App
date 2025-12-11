@@ -427,30 +427,37 @@ function getNextMurajaaProgressAfterAccept(student, level) {
 
   const len = arr.length;
 
+  // نقطة بداية الدورة الحالية للمراجعة
   let start = student.murajaa_start_index ?? 0;
   start = ((start % len) + len) % len;
 
+  // أين الطالب الآن في المراجعة؟
   let cur = student.murajaa_progress_index;
   if (cur == null) cur = start;
   cur = ((cur % len) + len) % len;
 
+  // المهمة التالية في نفس الدورة
   const next = (cur + 1) % len;
 
   let nextStart = start;
   let nextIndex = next;
   let newCycle = false;
 
-  // 🔁 لو رجعنا لنفس بداية الدورة → نبدأ دورة جديدة حسب خريطة الحفظ
+  // ✅ لو الطالب أنهى آخر مهمة في الدورة (رجعنا لنقطة البداية)
   if (next === start) {
     newCycle = true;
-    const fromHifz = getReviewStartIndexFromHifz(student);
-    const safeStart = ((fromHifz % len) + len) % len;
-    nextStart = safeStart;
-    nextIndex = safeStart;
+
+    // نحدد نقطة بداية الدورة الجديدة من خريطة الحفظ اللي أنت راسمها
+    let mappedStart = getReviewStartIndexFromHifz(student);
+    mappedStart = ((mappedStart % len) + len) % len; // تأمين داخل المدى
+
+    nextStart = mappedStart;   // بداية الدورة الجديدة
+    nextIndex = mappedStart;   // أول مهمة في الدورة الجديدة
   }
 
   return { nextStart, nextIndex, newCycle };
 }
+
 
 const getStudentEls = () => ({
   welcome: welcomeStudent,
