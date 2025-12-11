@@ -1,4 +1,4 @@
-const CACHE_NAME = "halaqa-v4"; // غيّر الرقم كل ما ترفع نسخة جديدة
+const CACHE_NAME = "halaqa-v5";
 const URLS_TO_CACHE = ["./", "./index.html"];
 
 // وقت التثبيت: نحفظ الملفات الأساسية
