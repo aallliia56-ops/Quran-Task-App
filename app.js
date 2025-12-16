@@ -9,6 +9,8 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  runTransaction,   // ✅ أضفها
+  increment,        // ✅ أضفها
 } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
 import {
@@ -173,6 +175,36 @@ function computeUpdatedWeekLog(student) {
     week_start: currentWeekStart,
     week_log: weekLog,
   };
+}
+async function incrementStarOnApprove(studentCode) {
+  const studentRef = doc(db, "students", studentCode);
+
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(studentRef);
+    if (!snap.exists()) return;
+
+    const student = snap.data();
+
+    // الأسبوع الحالي (بتوقيت السعودية)
+    const currentWeekStart = getCurrentWeekStartDate();
+    const todayKey = getTodayWeekdayKey(); // SUN..THU أو null للجمعة/السبت
+
+    if (!todayKey) return; // الجمعة/السبت ما فيها نجوم
+
+    // إذا أسبوع جديد: صفّر السجل
+    if (student.week_start !== currentWeekStart) {
+      tx.update(studentRef, {
+        week_start: currentWeekStart,
+        week_log: { [todayKey]: 1 },
+      });
+      return;
+    }
+
+    // نفس الأسبوع: زوّد عداد اليوم +1
+    tx.update(studentRef, {
+      [`week_log.${todayKey}`]: increment(1),
+    });
+  });
 }
 
 // ✅ رسم مخطط الأسبوع في واجهة الطالب
@@ -1832,7 +1864,6 @@ async function reviewTask(studentCode, taskId, action) {
       delete tasks[i].assistant_code;
 
       // 4) تحديث سجل الأسبوع بعد الموافقة
-      const weekData = computeUpdatedWeekLog(student);
       await updateDoc(studentRef, {
         tasks,
         total_points: student.total_points,
@@ -1843,9 +1874,11 @@ async function reviewTask(studentCode, taskId, action) {
         murajaa_start_index: student.murajaa_start_index ?? 0,
         murajaa_progress_index: student.murajaa_progress_index ?? 0,
         murajaa_cycles: student.murajaa_cycles || 0,
-        week_start: weekData.week_start,
-        week_log: weekData.week_log,
       });
+      
+      await incrementStarOnApprove(studentCode);
+
+
 
       showMessage(
         authMessage,
