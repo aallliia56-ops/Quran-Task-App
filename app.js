@@ -212,6 +212,21 @@ function renderWeeklyLog(student) {
     </div>
   `;
 }
+async function bumpWeekStars(studentCode) {
+  const studentRef = doc(db, "students", studentCode);
+
+  // نجيب أحدث بيانات (عشان ما نرجع نكتب week_log القديم)
+  const snap = await getDoc(studentRef);
+  if (!snap.exists()) return;
+  const student = snap.data();
+
+  const weekData = computeUpdatedWeekLog(student);
+
+  await updateDoc(studentRef, {
+    week_start: weekData.week_start,
+    week_log: weekData.week_log,
+  });
+}
 
 
 function showSingleChildExitScreen() {
@@ -1175,6 +1190,7 @@ async function submitCurriculumTask(studentCode, mission) {
     });
 
     await updateDoc(studentRef, { tasks });
+    await bumpWeekStars(studentCode);
 
     await displayStudentDashboard({
       code: studentCode,
@@ -1251,6 +1267,7 @@ async function submitMurajaaTask(studentCode, mission) {
     });
 
     await updateDoc(studentRef, { tasks });
+    await bumpWeekStars(studentCode);
 
     await displayStudentDashboard({
       code: studentCode,
