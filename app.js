@@ -184,14 +184,12 @@ async function incrementStarOnApprove(studentCode) {
     if (!snap.exists()) return;
 
     const student = snap.data();
-
-    // الأسبوع الحالي (بتوقيت السعودية)
     const currentWeekStart = getCurrentWeekStartDate();
-    const todayKey = getTodayWeekdayKey(); // SUN..THU أو null للجمعة/السبت
+    const todayKey = getTodayWeekdayKey(); // SUN..THU أو null
 
-    if (!todayKey) return; // الجمعة/السبت ما فيها نجوم
+    if (!todayKey) return;
 
-    // إذا أسبوع جديد: صفّر السجل
+    // أسبوع جديد: ابدأ من 1
     if (student.week_start !== currentWeekStart) {
       tx.update(studentRef, {
         week_start: currentWeekStart,
@@ -200,12 +198,18 @@ async function incrementStarOnApprove(studentCode) {
       return;
     }
 
-    // نفس الأسبوع: زوّد عداد اليوم +1
+    const weekLog = student.week_log || {};
+    const raw = weekLog[todayKey];
+
+    // لو كانت true/false من النظام القديم → اعتبرها 0
+    const prev = typeof raw === "number" ? raw : 0;
+
     tx.update(studentRef, {
-      [`week_log.${todayKey}`]: increment(1),
+      [`week_log.${todayKey}`]: prev + 1,
     });
   });
 }
+
 
 // ✅ رسم مخطط الأسبوع في واجهة الطالب
 function renderWeeklyLog(student) {
