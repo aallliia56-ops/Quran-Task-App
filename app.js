@@ -164,9 +164,10 @@ function computeUpdatedWeekLog(student) {
     weekLog = { ...student.week_log };
   }
 
-  if (todayKey) {
-    weekLog[todayKey] = true;
-  }
+    if (todayKey) {
+    const prev = Number(weekLog[todayKey] || 0);
+      weekLog[todayKey] = Math.min(prev + 1, 3);
+    }
 
   return {
     week_start: currentWeekStart,
@@ -196,9 +197,9 @@ function renderWeeklyLog(student) {
     <div class="weekly-row">
       ${days
         .map((d) => {
-          const done = !!weekLog[d.key];
-          const mark = done ? "✓" : "✗";
-          const statusClass = done ? "day-done" : "day-missed";
+          const count = Number(weekLog[d.key] || 0);
+          const statusClass = count > 0 ? "day-done" : "day-missed";
+          const stars = count > 0 ? "⭐".repeat(Math.min(count, 3)) : "—";
           return `
             <div class="weekly-day ${statusClass}">
               <div class="weekly-day-name">${d.label}</div>
