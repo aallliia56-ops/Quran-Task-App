@@ -120,34 +120,39 @@ function computeRankMapForGroup(students) {
 //  أسبوع الالتزام (من الأحد إلى الخميس)
 // ==================================================
 
-// بداية أسبوع الحالي (من الأحد)
-function getCurrentWeekStartDate() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  const day = d.getDay(); // 0 الأحد .. 6 السبت
-  const diffFromSunday = day;
-  d.setDate(d.getDate() - diffFromSunday);
-  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+function getKsaNow() {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Riyadh" }));
 }
 
-// مفتاح اليوم داخل الأسبوع
+// بداية أسبوع الحالي (من الأحد) بتوقيت السعودية
+function getCurrentWeekStartDate() {
+  const d = getKsaNow();
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay(); // 0 الأحد .. 6 السبت
+  d.setDate(d.getDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+
+// مفتاح اليوم داخل الأسبوع (الأحد..الخميس فقط) بتوقيت السعودية
 function getTodayWeekdayKey() {
-  const day = new Date().getDay(); // 0 Sunday .. 6 Saturday
+  const day = getKsaNow().getDay(); // 0 Sunday .. 6 Saturday
   switch (day) {
-    case 0:
-      return "SUN";
-    case 1:
-      return "MON";
-    case 2:
-      return "TUE";
-    case 3:
-      return "WED";
-    case 4:
-      return "THU";
-    default:
-      return null; // الجمعة والسبت خارج المخطط
+    case 0: return "SUN";
+    case 1: return "MON";
+    case 2: return "TUE";
+    case 3: return "WED";
+    case 4: return "THU";
+    default: return null; // الجمعة والسبت
   }
 }
+
+function getDayTypeKSA() {
+  const d = getKsaNow().getDay(); // 0=Sun .. 6=Sat
+  if (d >= 0 && d <= 2) return "HIFZ_DAY";      // الأحد-الثلاثاء
+  if (d === 3 || d === 4) return "MURAJAA_DAY"; // الأربعاء-الخميس
+  return "OFF_DAY";                              // الجمعة-السبت
+}
+
 
 // ✅ تحضير سجل الأسبوع بعد اعتماد مهمة من المعلم
 function computeUpdatedWeekLog(student) {
@@ -917,11 +922,38 @@ function renderStudentTasks(student) {
   const tasksArray = Array.isArray(student.tasks) ? student.tasks : [];
   const wrap = document.createElement("div");
 
+    // ====== فلترة حسب اليوم (فكرة A) ======
+  const dayType = getDayTypeKSA();
+
+  // رسالة “بعد الإرسال” (سطر بسيط)
+  const lastMsg = sessionStorage.getItem("student_last_msg");
+  if (lastMsg) {
+    const m = document.createElement("p");
+    m.className = "message success";
+    m.textContent = lastMsg;
+    wrap.appendChild(m);
+    sessionStorage.removeItem("student_last_msg");
+  }
+
+  // الجمعة/السبت: لا مهام
+  if (dayType === "OFF_DAY") {
+    const p = document.createElement("p");
+    p.className = "message info";
+    p.innerHTML = `لا يوجد لديك مهام اليوم 🌿<br><small>تذكير: تبدأ مهام الحفظ يوم الأحد.</small>`;
+    studentTasksDiv.appendChild(p);
+    return; // وقف هنا
+  }
+
+  // اليوم حفظ؟ فقط الحفظ. اليوم مراجعة؟ فقط المراجعة.
+  const allowHifzToday = dayType === "HIFZ_DAY";
+  const allowMurToday = dayType === "MURAJAA_DAY";
+
+
   const hifzPaused = !!student.pause_hifz;
   const murajaaPaused = !!student.pause_murajaa;
 
   // مهمة الحفظ
-  const hifzMission = !hifzPaused ? getCurrentHifzMission(student) : null;
+const hifzMission = (!hifzPaused && allowHifzToday) ? getCurrentHifzMission(student) : null;
   if (hifzMission) {
     const pendingCurriculumTask = tasksArray.find(
       (t) =>
@@ -961,7 +993,7 @@ function renderStudentTasks(student) {
   }
 
   // مهمة المراجعة
-  const murMission = !murajaaPaused ? getCurrentMurajaaMission(student) : null;
+ const murMission = (!murajaaPaused && allowMurToday) ? getCurrentMurajaaMission(student) : null;
   if (murMission) {
     const pendingMurTask = tasksArray.find(
       (t) =>
