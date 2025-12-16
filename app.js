@@ -200,14 +200,19 @@ function renderWeeklyLog(student) {
           const count = Number(weekLog[d.key] || 0);
           const statusClass = count > 0 ? "day-done" : "day-missed";
           const stars = count > 0 ? "⭐".repeat(Math.min(count, 3)) : "—";
-          
+
           return `
-          <div class="weekly-day ${statusClass}">
-          <div class="weekly-day-name">${d.label}</div>
-          <div class="weekly-day-status">${stars}</div>
-          </div>
+            <div class="weekly-day ${statusClass}">
+              <div class="weekly-day-name">${d.label}</div>
+              <div class="weekly-day-status">${stars}</div>
+            </div>
           `;
+        })
+        .join("")}
+    </div>
+  `;
 }
+
 
 function showSingleChildExitScreen() {
   hideAllScreens();
