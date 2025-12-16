@@ -42,7 +42,7 @@ export function getReviewStartFromHifzIndex(hifzIndex) {
     }
   }
   // لو ما حصلناه في الخريطة → ترجع أول مهمة (أو 0 لو حاب)
-  return 0;
+  return 1;
 }
 
 // ======================================================================
@@ -51,13 +51,13 @@ export function getReviewStartFromHifzIndex(hifzIndex) {
 
 const SURAH_DETAILS = [
   // --- سورة الناس (114) ---
-{ surah_number: 114, surah_name_ar: "الناس", start_ayah: 1, end_ayah: 6, page: 604, audio_id: 114 },
+{ surah_number: 114, surah_name_ar: "الناس", start_ayah: 1, end_ayah: 6, page: 604, },
 
 // --- سورة الفلق (113) ---
-{ surah_number: 113, surah_name_ar: "الفلق", start_ayah: 1, end_ayah: 5, page: 604, audio_id: 113 },
+{ surah_number: 113, surah_name_ar: "الفلق", start_ayah: 1, end_ayah: 5, page: 604, },
 
 // --- سورة الإخلاص (112) ---
-{ surah_number: 112, surah_name_ar: "الإخلاص", start_ayah: 1, end_ayah: 4, page: 604, audio_id: 112 },
+{ surah_number: 112, surah_name_ar: "الإخلاص", start_ayah: 1, end_ayah: 4, page: 604 },
 
   // --- سورة المسد (111) ---
   { surah_number: 111, surah_name_ar: "المسد", start_ayah: 1, end_ayah: 5, page: 604 },
