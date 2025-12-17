@@ -1866,8 +1866,14 @@ async function reviewTask(studentCode, taskId, action) {
       tasks[i].status = "completed";
       delete tasks[i].assistant_type;
       delete tasks[i].assistant_code;
+      
+      // ⭐ النجمة (مرة واحدة فقط)
+      if (!task.star_counted) {
+        await incrementStarOnApprove(studentCode);
+        task.star_counted = true;
+      }
 
-      // 4) تحديث سجل الأسبوع بعد الموافقة
+      // حفظ التحديثات
       await updateDoc(studentRef, {
         tasks,
         total_points: student.total_points,
@@ -1879,10 +1885,13 @@ async function reviewTask(studentCode, taskId, action) {
         murajaa_progress_index: student.murajaa_progress_index ?? 0,
         murajaa_cycles: student.murajaa_cycles || 0,
       });
-      
-      await incrementStarOnApprove(studentCode);
 
 
+      // ⭐ زيادة النجوم مرة واحدة فقط لكل مهمة
+      if (!task.star_counted) {
+        await incrementStarOnApprove(studentCode);
+        task.star_counted = true;
+      }      
 
       showMessage(
         authMessage,
