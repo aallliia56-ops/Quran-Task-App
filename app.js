@@ -155,6 +155,93 @@ function getDayTypeKSA() {
   return "OFF_DAY";                              // الجمعة-السبت
 }
 
+function getDateKeyKSA() {
+  return getKsaNow().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function computeTodayMission(student) {
+  const dayType = getDayTypeKSA();
+
+  if (dayType === "HIFZ_DAY") {
+    if (student.pause_hifz) return null;
+    return getCurrentHifzMission(student); // مهمة واحدة أصلاً
+  }
+
+  if (dayType === "MURAJAA_DAY") {
+    if (student.pause_murajaa) return null;
+    return getCurrentMurajaaMission(student); // مهمة واحدة أصلاً
+  }
+
+  return null; // OFF_DAY
+}
+
+function computeNextMissionLine(student) {
+  const dayType = getDayTypeKSA();
+  if (dayType === "HIFZ_DAY") {
+    const next = getNextHifzMission(student);
+    return `المهمة القادمة: ${next ? next.description : "—"}`;
+  }
+  if (dayType === "MURAJAA_DAY") {
+    const next = getNextMurajaaMission(student);
+    return `المهمة القادمة: ${next ? next.description : "—"}`;
+  }
+  return "المهمة القادمة: —";
+}
+
+async function ensureDailyLock(studentCode, student) {
+  // يخزن اختيار "مهمة اليوم" في Firestore عشان تكون ثابتة طوال اليوم
+  const studentRef = doc(db, "students", studentCode);
+  const dateKey = getDateKeyKSA();
+
+  const daily = student.daily_mission || null;
+  const current = computeTodayMission(student);
+
+  // الجمعة/السبت أو ما عنده مهمة → نظف القفل
+  if (!current) {
+    if (daily?.dateKey === dateKey) return { locked: null, dateKey };
+    await updateDoc(studentRef, { daily_mission: { dateKey, mission: null } });
+    return { locked: null, dateKey };
+  }
+
+  // لو نفس اليوم وفيه قفل مطابق → استخدمه
+  if (daily?.dateKey === dateKey && daily?.mission) {
+    return { locked: daily.mission, dateKey };
+  }
+
+  // غير كذا: اقفل مهمة اليوم الحالية
+  const lock = {
+    dateKey,
+    mission: {
+      type: current.type,                // hifz / murajaa
+      description: current.description,
+      points: current.points || 0,
+
+      // مميزات الربط حسب النوع
+      mission_start: current.type === "hifz" ? current.startIndex : undefined,
+      mission_last: current.type === "hifz" ? current.lastIndex : undefined,
+
+      murajaa_level: current.type === "murajaa" ? current.level : undefined,
+      murajaa_index: current.type === "murajaa" ? current.index : undefined,
+    },
+  };
+
+  await updateDoc(studentRef, { daily_mission: lock });
+  return { locked: lock.mission, dateKey };
+}
+
+function showThankYou(nextLineText) {
+  const box = document.getElementById("thankyou-box");
+  const line = document.getElementById("thankyou-next-line");
+  if (line) line.textContent = nextLineText || "";
+  if (box) box.classList.remove("hidden");
+}
+
+function hideThankYou() {
+  const box = document.getElementById("thankyou-box");
+  if (box) box.classList.add("hidden");
+}
+
+
 
 // ✅ تحضير سجل الأسبوع بعد اعتماد مهمة من المعلم
 function computeUpdatedWeekLog(student) {
@@ -953,7 +1040,21 @@ async function displayStudentDashboard(student) {
     safeSetText(els.totalPoints, points);
     safeSetText(els.rankText, rankOnly);
 
-    renderStudentTasks(student);
+    hideThankYou(); // نخفي الشكر افتراضياً
+
+// ✅ اقفل مهمة اليوم (تكون ثابتة اليوم كله)
+    try {
+      const { locked } = await ensureDailyLock(student.code, student);
+  // نخزنها على نفس الطالب (للاستخدام داخل renderStudentTasks)
+      student.daily_mission = student.daily_mission || {};
+      student.daily_mission.mission = locked || null;
+      student.daily_mission.dateKey = getDateKeyKSA();
+    } catch (e) {
+      console.warn("ensureDailyLock failed:", e);
+    }
+
+renderStudentTasks(student);
+
 
     hideAllScreens();
     studentScreen.classList.remove("hidden");
@@ -978,6 +1079,18 @@ function renderStudentTasks(student) {
 
     // ====== فلترة حسب اليوم (فكرة A) ======
   const dayType = getDayTypeKSA();
+  // ✅ لو فيه رسالة شكر محفوظة في sessionStorage → اعرضها كصفحة شكر
+  const thank = sessionStorage.getItem("student_thank_you");
+  if (thank) {
+    showThankYou(thank);
+    sessionStorage.removeItem("student_thank_you");
+    studentTasksDiv.innerHTML = ""; // نخفي الكروت
+    return;
+  }
+
+// ✅ استخدم مهمة اليوم المقفولة (إن وجدت)
+const lockedMission = student.daily_mission?.mission || null;
+
 
   // رسالة “بعد الإرسال” (سطر بسيط)
   const lastMsg = sessionStorage.getItem("student_last_msg");
@@ -1007,7 +1120,17 @@ function renderStudentTasks(student) {
   const murajaaPaused = !!student.pause_murajaa;
 
   // مهمة الحفظ
-const hifzMission = (!hifzPaused && allowHifzToday) ? getCurrentHifzMission(student) : null;
+const hifzMission =
+  (!hifzPaused && allowHifzToday && lockedMission?.type === "hifz")
+    ? {
+        type: "hifz",
+        startIndex: lockedMission.mission_start,
+        lastIndex: lockedMission.mission_last ?? lockedMission.mission_start,
+        description: lockedMission.description,
+        points: lockedMission.points || 0,
+      }
+    : null;
+
   if (hifzMission) {
     const pendingCurriculumTask = tasksArray.find(
       (t) =>
@@ -1047,7 +1170,17 @@ const hifzMission = (!hifzPaused && allowHifzToday) ? getCurrentHifzMission(stud
   }
 
   // مهمة المراجعة
- const murMission = (!murajaaPaused && allowMurToday) ? getCurrentMurajaaMission(student) : null;
+ const murMission =
+  (!murajaaPaused && allowMurToday && lockedMission?.type === "murajaa")
+    ? {
+        type: "murajaa",
+        level: lockedMission.murajaa_level,
+        index: lockedMission.murajaa_index,
+        description: lockedMission.description,
+        points: lockedMission.points || 0,
+      }
+    : null;
+
   if (murMission) {
     const pendingMurTask = tasksArray.find(
       (t) =>
@@ -1227,6 +1360,8 @@ async function submitCurriculumTask(studentCode, mission) {
 
     await updateDoc(studentRef, { tasks });
     await bumpWeekStars(studentCode);
+    sessionStorage.setItem("student_thank_you", computeNextMissionLine(student));
+
 
     await displayStudentDashboard({
       code: studentCode,
@@ -1304,6 +1439,8 @@ async function submitMurajaaTask(studentCode, mission) {
 
     await updateDoc(studentRef, { tasks });
     await bumpWeekStars(studentCode);
+    sessionStorage.setItem("student_thank_you", computeNextMissionLine(student));
+
 
     await displayStudentDashboard({
       code: studentCode,
@@ -1368,6 +1505,7 @@ async function submitGeneralTask(studentCode, taskId) {
 
     tasks[i].status = "pending";
     await updateDoc(studentRef, { tasks });
+    sessionStorage.setItem("student_thank_you", "ممتاز ✅ استمر. " + computeNextMissionLine(student));    
     await displayStudentDashboard({ code: studentCode, ...student, tasks });
     showMessage(authMessage, "تم إرسال المهمة العامة للمراجعة.", "success");
   } catch (e) {
