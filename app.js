@@ -1873,6 +1873,63 @@ async function loadPendingTasksForReview() {
       `<p class="message error">خطأ في تحميل المهام: ${e.message}</p>`;
   }
 }
+async function assignGeneralTaskToStudent(studentCode, description, points = 0) {
+  const code = String(studentCode || "").trim();
+  const desc = String(description || "").trim();
+  const pts = Number(points || 0);
+
+  if (!code || !desc) {
+    showMessage(assignTaskMessage, "اكتب رمز الطالب ووصف المهمة.", "error");
+    return;
+  }
+
+  try {
+    const studentRef = doc(db, "students", code);
+    const snap = await getDoc(studentRef);
+    if (!snap.exists()) {
+      showMessage(assignTaskMessage, "الطالب غير موجود.", "error");
+      return;
+    }
+
+    const student = snap.data();
+    const tasks = Array.isArray(student.tasks) ? student.tasks : [];
+
+    tasks.push({
+      id: generateUniqueId(),
+      type: "general",
+      description: desc,
+      points: pts,
+      status: "assigned",      // ✅ مهم: تبدأ assigned عشان تظهر للطالب بزر "أنجزت المهمة"
+      created_at: Date.now(),
+    });
+
+    await updateDoc(studentRef, { tasks });
+
+    showMessage(assignTaskMessage, "تم إسناد مهمة عامة للطالب ✅", "success");
+
+    // تحديث واجهة المعلم إن حاب
+    await loadStudentsForTeacher();
+  } catch (e) {
+    console.error("assignGeneralTaskToStudent error:", e);
+    showMessage(assignTaskMessage, `خطأ: ${e.message}`, "error");
+  }
+}
+
+assignIndividualTaskButton?.addEventListener("click", async () => {
+  const code = assignTaskStudentCode?.value?.trim();
+  const type = assignTaskType?.value; 
+  const desc = assignTaskDescription?.value?.trim();
+  const pts = Number(assignTaskPoints?.value || 0);
+
+  if (type === "general") {
+    await assignGeneralTaskToStudent(code, desc, pts);
+    return;
+  }
+
+  // هنا خلك على منطقك القديم للحفظ/المراجعة (لا تحذفه)
+});
+
+
 async function loadHonorBoard() {
   if (!honorBoardDiv) return;
 
