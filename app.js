@@ -995,41 +995,46 @@ async function displayStudentDashboard(student) {
 
     updatePlanStrip({ startSurah, endSurah, points, rank: rankOnly });
 
-    const hifzMission = getCurrentHifzMission(student);
-    const murMission = getCurrentMurajaaMission(student);
+    hideThankYou(); // نخفي الشكر افتراضياً
 
-    safeSetText(
-      els.hifzLabel,
-      hifzMission ? hifzMission.description : "لا توجد مهمة حفظ حالياً."
-    );
-    safeSetText(
-      els.murLabel,
-      murMission ? murMission.description : "لا توجد مهمة مراجعة حالياً."
-    );
+// ✅ اقفل مهمة اليوم أولاً
+let lockedMission = null;
+try {
+  const res = await ensureDailyLock(student.code, student);
+  lockedMission = res.locked || null;
 
-    if (els.murLevel) {
-      safeSetText(
-        els.murLevel,
-        murMission
-          ? murMission.level === "BUILDING"
-            ? "البناء"
-            : murMission.level === "DEVELOPMENT"
-            ? "التطوير"
-            : "المتقدم"
-          : "غير محدد"
-      );
-    }
+  // حدّث نسخة الطالب المحلية عشان renderStudentTasks يقرأها
+  student.daily_mission = student.daily_mission || {};
+  student.daily_mission.mission = lockedMission;
+  student.daily_mission.dateKey = getDateKeyKSA();
+} catch (e) {
+  console.warn("ensureDailyLock failed:", e);
+}
 
-    const nextH = getNextHifzMission(student);
-    const nextM = getNextMurajaaMission(student);
-    safeSetText(
-      studentHifzNextLabel,
-      `المهمة القادمة: ${nextH ? nextH.description : "—"}`
-    );
-    safeSetText(
-      studentMurajaaNextLabel,
-      `المهمة القادمة: ${nextM ? nextM.description : "—"}`
-    );
+// ✅ اعرض مهمة واحدة فقط بناءً على lockedMission
+const dayType = getDayTypeKSA();
+
+if (dayType === "OFF_DAY" || !lockedMission) {
+  safeSetText(els.hifzLabel, "لا توجد مهمة اليوم.");
+  safeSetText(els.murLabel, "لا توجد مهمة اليوم.");
+  safeSetText(studentHifzNextLabel, "المهمة القادمة: —");
+  safeSetText(studentMurajaaNextLabel, "المهمة القادمة: —");
+} else if (lockedMission.type === "hifz") {
+  safeSetText(els.hifzLabel, lockedMission.description);
+  safeSetText(els.murLabel, "—"); // نخفي المراجعة في يوم الحفظ
+
+  const nextH = getNextHifzMission(student);
+  safeSetText(studentHifzNextLabel, `المهمة القادمة: ${nextH ? nextH.description : "—"}`);
+  safeSetText(studentMurajaaNextLabel, "المهمة القادمة: —");
+} else if (lockedMission.type === "murajaa") {
+  safeSetText(els.murLabel, lockedMission.description);
+  safeSetText(els.hifzLabel, "—"); // نخفي الحفظ في يوم المراجعة
+
+  const nextM = getNextMurajaaMission(student);
+  safeSetText(studentMurajaaNextLabel, `المهمة القادمة: ${nextM ? nextM.description : "—"}`);
+  safeSetText(studentHifzNextLabel, "المهمة القادمة: —");
+}
+
 
     safeSetText(els.hifzPct, `${hifzPct}%`);
     safeSetText(els.murPct, `${murPct}%`);
@@ -1360,7 +1365,12 @@ async function submitCurriculumTask(studentCode, mission) {
 
     await updateDoc(studentRef, { tasks });
     await bumpWeekStars(studentCode);
-    sessionStorage.setItem("student_thank_you", computeNextMissionLine(student));
+    const next = getNextHifzMission(student);
+    sessionStorage.setItem(
+      "student_thank_you",
+      `أحسنت ✅ أنجزت مهمة اليوم.\nالمهمة القادمة: ${next ? next.description : "—"}`
+    );
+
 
 
     await displayStudentDashboard({
@@ -1439,7 +1449,12 @@ async function submitMurajaaTask(studentCode, mission) {
 
     await updateDoc(studentRef, { tasks });
     await bumpWeekStars(studentCode);
-    sessionStorage.setItem("student_thank_you", computeNextMissionLine(student));
+    const next = getNextMurajaaMission(student);
+    sessionStorage.setItem(
+      "student_thank_you",
+      `أحسنت ✅ أنجزت مهمة اليوم.\nالمهمة القادمة: ${next ? next.description : "—"}`
+    );
+
 
 
     await displayStudentDashboard({
